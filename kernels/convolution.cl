@@ -18,7 +18,7 @@ __kernel void convolve(
 
         for (int posx = 0; posx < maskWidth; ++posx)
         {
-            sum = mask[(posy * maskWidth) + posx] * input[idxInTemp + posx];
+            sum += mask[(posy * maskWidth) + posx] * input[idxInTemp + posx];
         }
     }
 
