@@ -18,6 +18,8 @@
 
 #include "cppcl.hpp"
 
+#include <iostream>
+
 namespace ocl
 {
 
@@ -59,6 +61,20 @@ std::vector<cl_platform_id> getPlatformList()
     std::vector<cl_platform_id> platformList(number);
     clGetPlatformIDs(number, platformList.data(), nullptr);
     return platformList;
+}
+
+void printClError(cl_uint error, const char* msg)
+{
+    std::cerr << "OpenCL Error #" << error << std::endl;
+    std::cerr << msg << std::endl;
+    throw msg;
+}
+
+void printClError(cl_uint error, std::string msg)
+{
+    std::cerr << "OpenCL Error #" << error << std::endl;
+    std::cerr << msg << std::endl;
+    throw msg;
 }
 
 }   //  namespace ocl
