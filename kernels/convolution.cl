@@ -25,3 +25,4 @@ __kernel void convolve(
     output[y * get_global_size(0) + x] = sum;
 }
 
+
