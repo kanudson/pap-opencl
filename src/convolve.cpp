@@ -9,7 +9,7 @@
 #include "cppcl.hpp"
 
 void parsePlatformInfo(cl_platform_id platform);
-cl_int* createInputData(unsigned int seed = 0);
+cl_uint* createInputData(unsigned int seed = 0);
 
 namespace {
     constexpr unsigned int INPUT_WIDTH   = 10000;
@@ -18,11 +18,13 @@ namespace {
     constexpr unsigned int OUTPUT_HEIGHT = INPUT_HEIGHT - 2;
     constexpr unsigned int MASK_WIDTH    = 3;
     constexpr unsigned int MASK_HEIGHT   = 3;
-    
-    const cl_int mask[MASK_WIDTH][MASK_HEIGHT] = 
+
+    cl_uint mask[MASK_WIDTH][MASK_HEIGHT] = 
         {
             {1,1,1}, {1,0,1}, {1,1,1}
         };
+
+    cl_uint outputData[OUTPUT_WIDTH][OUTPUT_HEIGHT];
 }
 
 //// Callback stuff
@@ -53,8 +55,15 @@ int convolve(int argc, char* argv[])
             nullptr, nullptr, &err);
     if (err != CL_SUCCESS)
     {
-        std::cerr << "nope, kein context fuer dich" << std::endl;
-        return 1;
+        std::cerr << "nope, kein GPU context fuer dich" << std::endl;
+        cl_context context = clCreateContextFromType(props,
+               CL_DEVICE_TYPE_CPU,
+               nullptr, nullptr, &err);
+        if (err != CL_SUCCESS)
+        {
+            std::cerr << "nope, auch kein CPU context da =/" << std::endl;
+            return 1;
+        }
     }
     else
     {
@@ -103,6 +112,63 @@ int convolve(int argc, char* argv[])
     auto data = createInputData(1);
     std::cout << "input data initialized" << std::endl;
 
+    //  Puffer
+    auto inputBuffer = clCreateBuffer(context,
+            CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+            sizeof(cl_uint) * INPUT_WIDTH * INPUT_HEIGHT,
+            static_cast<void*>(data), &err);
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "inputpuffer kann nicht erstellt werden" << std::endl;
+        return 1;
+    }
+
+    auto maskBuffer = clCreateBuffer(context,
+            CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+            sizeof(cl_uint) * MASK_WIDTH * MASK_HEIGHT,
+            static_cast<void*>(mask), &err);
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "inputpuffer kann nicht erstellt werden" << std::endl;
+        return 1;
+    }
+
+   auto outputBuffer = clCreateBuffer(context,
+            CL_MEM_WRITE_ONLY,
+            sizeof(cl_uint) * OUTPUT_WIDTH * OUTPUT_HEIGHT,
+            nullptr, &err);
+    if (err != CL_SUCCESS)
+        ocl::printClError(err, "output buffer kann nicht erstellt werden");
+
+    auto queue = clCreateCommandQueue(context,
+        deviceids[0], 0, &err);
+    if (err != CL_SUCCESS)
+        ocl::printClError(err, "keine queue");
+
+    err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputBuffer);
+    err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &maskBuffer);
+    err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &outputBuffer);
+    err |= clSetKernelArg(kernel, 3, sizeof(cl_uint), &INPUT_WIDTH);
+    err |= clSetKernelArg(kernel, 4, sizeof(cl_uint), &MASK_WIDTH);
+    if(err != CL_SUCCESS)
+        ocl::printClError(err, "argument shti failed");
+
+    const size_t globalWorkSize[1] = { OUTPUT_WIDTH * OUTPUT_HEIGHT };
+    const size_t localWorkSize[1]  = { 1 };
+
+    err = clEnqueueNDRangeKernel(queue, kernel, 1, nullptr,
+            globalWorkSize, localWorkSize,
+            0, nullptr, nullptr);
+    if (err != CL_SUCCESS)
+        ocl::printClError(err, "enqueue will nich");
+
+    //  ergebnis laden
+    err = clEnqueueReadBuffer(queue, outputBuffer, CL_TRUE, 0,
+            sizeof(cl_uint) * OUTPUT_WIDTH * OUTPUT_HEIGHT,
+            outputData, 0, nullptr, nullptr);
+    if (err != CL_SUCCESS)
+        ocl::printClError(err, "read output failed");
+
     delete data;
     return 0;
 }
@@ -111,11 +177,11 @@ int convolve(int argc, char* argv[])
 /////////////////////////////////////////////////////////////////////
 //  erstellt input array
 //  pointer muss vom _aufrufer_ freigegeben werden
-cl_int* createInputData(unsigned int seed)
+cl_uint* createInputData(unsigned int seed)
 {
     srand(seed);
 
-    cl_int* data = new cl_int[INPUT_WIDTH * INPUT_HEIGHT];
+    auto data = new cl_uint[INPUT_WIDTH * INPUT_HEIGHT];
     for (cl_int row = 0; row < INPUT_HEIGHT; ++row)
         for (cl_int col = 0; col < INPUT_WIDTH; ++col)
             data[(row * INPUT_WIDTH) + col] = rand() % 6;
