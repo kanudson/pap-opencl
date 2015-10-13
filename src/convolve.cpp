@@ -98,8 +98,10 @@ int convolve(int argc, char* argv[])
     if (err != CL_SUCCESS)
         throw "kein kernel fuer dich";
 
+    std::cout << "doing stuff... " << std::endl;
     //  create data
     auto data = createInputData(1);
+    std::cout << "input data initialized" << std::endl;
 
     delete data;
     return 0;
