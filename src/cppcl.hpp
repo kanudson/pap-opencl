@@ -24,6 +24,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <sstream>
 
 //  C stuff
