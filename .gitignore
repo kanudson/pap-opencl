@@ -1,6 +1,7 @@
 [bB]uild/*
 [dD]ebug/*
 [rR]elease/*
+.scons*
 x64/*
 *sdf
 .vs*
