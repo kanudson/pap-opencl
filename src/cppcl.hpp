@@ -27,6 +27,10 @@
 
 #include <CL/cl.h>
 
+//  enable exceptions for C++ binding
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+
 namespace ocl
 {
 //  helper functions
@@ -40,4 +44,3 @@ void printClError(cl_uint error, std::string msg);
 }   //  namespace ocl
 
 #endif   /* ----- #ifndef cppcl_INC  ----- */
-
