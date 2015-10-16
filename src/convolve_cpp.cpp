@@ -7,19 +7,19 @@ namespace
     int selectClPlatform(std::vector<cl::Platform> platforms)
     {
         unsigned int i = 0;
-        for (auto x : platforms)
+        for (auto platform : platforms)
         {
             std::cout << "PlatformID #" << i++ << std::endl;
-            auto info = platforms[0].getInfo<CL_PLATFORM_VENDOR>();
+            auto info = platform.getInfo<CL_PLATFORM_VENDOR>();
             std::cout << "\t" << info << std::endl;
 
-            auto info2 = platforms[0].getInfo<CL_PLATFORM_NAME>();
+            auto info2 = platform.getInfo<CL_PLATFORM_NAME>();
             std::cout << "\t" << info2 << std::endl;
 
-            auto info3 = platforms[0].getInfo<CL_PLATFORM_VERSION>();
+            auto info3 = platform.getInfo<CL_PLATFORM_VERSION>();
             std::cout << "\t" << info3 << std::endl;
 
-            auto info4 = platforms[0].getInfo<CL_PLATFORM_PROFILE>();
+            auto info4 = platform.getInfo<CL_PLATFORM_PROFILE>();
             std::cout << "\t" << info4 << std::endl;
         }
 
