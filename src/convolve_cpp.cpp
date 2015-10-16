@@ -2,7 +2,6 @@
 #include "cppcl.hpp"
 
 
-
 namespace
 {
     int selectClPlatform(std::vector<cl::Platform> platforms)
@@ -74,10 +73,10 @@ int ocl_cpphello(int argc, char** argv)
         cl::Platform::get(&platforms);
 
         auto selectedPlatform = selectClPlatform(platforms);
-        std::cout << "You choose #" << selectedPlatform << std::endl;
+        std::cout << "You choose Platform #" << selectedPlatform << std::endl;
 
         auto selectedDevice = selectClDevice(platforms[selectedPlatform]);
-        std::cout << "You choose #" << selectedDevice << std::endl;
+        std::cout << "You choose Device #" << selectedDevice << std::endl;
     }
     catch (...)
     {
