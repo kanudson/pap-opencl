@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-namespace ocl
+namespace papcl
 {
 
 /*

@@ -8,14 +8,13 @@
 
 #include "cppcl.hpp"
 
-void parsePlatformInfo(cl_platform_id platform);
 cl_uint* createInputData(unsigned int seed = 0);
 
 namespace {
-    constexpr unsigned int INPUT_WIDTH   = 10000;
-    constexpr unsigned int INPUT_HEIGHT  = 10000;
-    constexpr unsigned int OUTPUT_WIDTH  = INPUT_WIDTH - 2;
-    constexpr unsigned int OUTPUT_HEIGHT = INPUT_HEIGHT - 2;
+    constexpr unsigned int INPUT_WIDTH   = 8;
+    constexpr unsigned int INPUT_HEIGHT  = 8;
+    constexpr unsigned int OUTPUT_WIDTH  = 6;
+    constexpr unsigned int OUTPUT_HEIGHT = 6;
     constexpr unsigned int MASK_WIDTH    = 3;
     constexpr unsigned int MASK_HEIGHT   = 3;
 
@@ -25,6 +24,19 @@ namespace {
         };
 
     cl_uint outputData[OUTPUT_WIDTH][OUTPUT_HEIGHT];
+
+    cl_uint inputSignal[INPUT_WIDTH][INPUT_WIDTH] =
+    {
+        { 3, 1, 1, 4, 8, 2, 1, 3 },
+        { 4, 2, 1, 1, 2, 1, 2, 3 },
+        { 4, 4, 4, 4, 3, 2, 2, 2 },
+        { 9, 8, 3, 8, 9, 0, 0, 0 },
+        { 9, 3, 3, 9, 0, 0, 0, 0 },
+        { 0, 9, 0, 8, 0, 0, 0, 0 },
+        { 3, 0, 8, 8, 9, 4, 4, 4 },
+        { 5, 9, 8, 1, 8, 1, 1, 1 }
+    };
+
 }
 
 //// Callback stuff
@@ -43,7 +55,7 @@ void CL_CALLBACK contextCallback(
 int convolve(int argc, char* argv[])
 {
     cl_int err = CL_SUCCESS;
-    auto platformList = ocl::getPlatformList();
+    auto platformList = papcl::getPlatformList();
 
     cl_context_properties props[] = {
         CL_CONTEXT_PLATFORM,
@@ -109,7 +121,7 @@ int convolve(int argc, char* argv[])
 
     std::cout << "doing stuff... " << std::endl;
     //  create data
-    auto data = createInputData(1);
+    auto data = inputSignal;
     std::cout << "input data initialized" << std::endl;
 
     //  Puffer
@@ -138,12 +150,12 @@ int convolve(int argc, char* argv[])
             sizeof(cl_uint) * OUTPUT_WIDTH * OUTPUT_HEIGHT,
             nullptr, &err);
     if (err != CL_SUCCESS)
-        ocl::printClError(err, "output buffer kann nicht erstellt werden");
+        papcl::printClError(err, "output buffer kann nicht erstellt werden");
 
     auto queue = clCreateCommandQueue(context,
         deviceids[0], 0, &err);
     if (err != CL_SUCCESS)
-        ocl::printClError(err, "keine queue");
+        papcl::printClError(err, "keine queue");
 
     err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputBuffer);
     err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &maskBuffer);
@@ -151,7 +163,7 @@ int convolve(int argc, char* argv[])
     err |= clSetKernelArg(kernel, 3, sizeof(cl_uint), &INPUT_WIDTH);
     err |= clSetKernelArg(kernel, 4, sizeof(cl_uint), &MASK_WIDTH);
     if(err != CL_SUCCESS)
-        ocl::printClError(err, "argument shti failed");
+        papcl::printClError(err, "argument shti failed");
 
     const size_t globalWorkSize[1] = { OUTPUT_WIDTH * OUTPUT_HEIGHT };
     const size_t localWorkSize[1]  = { 1 };
@@ -160,16 +172,26 @@ int convolve(int argc, char* argv[])
             globalWorkSize, localWorkSize,
             0, nullptr, nullptr);
     if (err != CL_SUCCESS)
-        ocl::printClError(err, "enqueue will nich");
+        papcl::printClError(err, "enqueue will nich");
 
     //  ergebnis laden
     err = clEnqueueReadBuffer(queue, outputBuffer, CL_TRUE, 0,
             sizeof(cl_uint) * OUTPUT_WIDTH * OUTPUT_HEIGHT,
             outputData, 0, nullptr, nullptr);
     if (err != CL_SUCCESS)
-        ocl::printClError(err, "read output failed");
+        papcl::printClError(err, "read output failed");
 
-    delete data;
+
+    // Output the result buffer
+    for (int y = 0; y < OUTPUT_WIDTH; y++)
+    {
+        for (int x = 0; x < OUTPUT_WIDTH; x++)
+        {
+            std::cout << outputData[x][y] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl << "Executed program succesfully." << std::endl;
     return 0;
 }
 

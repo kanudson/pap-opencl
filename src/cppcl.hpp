@@ -20,20 +20,28 @@
 #ifndef  cppcl_INC
 #define  cppcl_INC
 
-#include <string>
+//  C++ stuff
 #include <vector>
+#include <iostream>
+#include <string>
+#include <sstream>
 
+//  C stuff
 #include <cstdlib>
 
+//  OpenCL C-Bindings
 #include <CL/cl.h>
 
 //  enable exceptions for C++ binding
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
-namespace ocl
-{
+
 //  helper functions
+//  own namespace to keep it clean
+//  [P]arallele [A]rchitekturen und [P]rozesse - Open[CL]
+namespace papcl
+{
 std::string get_clPlatformInfo(cl_platform_id platform, cl_platform_info info);
 
 cl_uint getPlatformCount();
