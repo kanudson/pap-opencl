@@ -42,6 +42,7 @@ cl::Device selectClDevice(cl::Platform& platform);
 std::string loadFileContent(std::string filename);
 
 bool frontierEmpty(const cl_int* frontier, unsigned int vertexCount);
+unsigned int frontierSize (const cl_int* frontier, unsigned int vertexCount);
 void generateGraph(GraphData* data, int vertexCount, int neighborsPerVertex);
 
 //  run the program

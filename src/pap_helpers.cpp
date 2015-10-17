@@ -5,6 +5,9 @@
 
 int selectClPlatform(std::vector<cl::Platform> platforms)
 {
+    if (platforms.size() == 1)
+        return 0;
+
     unsigned int i = 0;
     for (auto platform : platforms)
     {
@@ -22,10 +25,6 @@ int selectClPlatform(std::vector<cl::Platform> platforms)
         std::cout << "\t" << info4 << std::endl;
     }
 
-    //  skip selection if only one platform is available
-    if (i == 1)
-        return 0;
-
     unsigned int selection;
     do
     {
@@ -39,6 +38,9 @@ cl::Device selectClDevice(cl::Platform& platform)
 {
     std::vector<cl::Device> devices;
     platform.getDevices(CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_GPU, &devices);
+
+    if (devices.size() == 1)
+        return devices[0];
 
     unsigned int i = 0;
     for (auto device : devices)
@@ -55,10 +57,6 @@ cl::Device selectClDevice(cl::Platform& platform)
         std::cout << "\t\tDevice Local Memory: " << device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
         std::cout << "\t\tDevice Available: " << device.getInfo< CL_DEVICE_AVAILABLE>() << std::endl;
     }
-
-    //  skip selection if only one device is available
-    if (i == 1)
-        return devices[0];
 
     unsigned int selection;
     do

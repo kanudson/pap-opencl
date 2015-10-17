@@ -21,8 +21,10 @@
 #include "cppcl.hpp"
 
 #include <iostream>
-#include <cstdlib>
 #include <vector>
+
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -59,12 +61,26 @@ bool frontierEmpty(const cl_int* frontier, unsigned int vertexCount)
     return running;
 }
 
+unsigned int frontierSize(const cl_int* frontier, unsigned int vertexCount)
+{
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < vertexCount; ++i)
+    {
+        if (frontier[i])
+            ++count;
+    }
+    return count;
+}
+
 
 /**
  * @fn  void runBreadthFirstSearch(cl::Context& context, GraphData& data, unsigned int startVertex, unsigned int endVertex)
  *
  * @brief   runs the breath first search on a given graph Uses the given OpenCL Context to run
  *          the algorithm.
+ *          Uses a unweighted, one directional graph
+ *          The weightArray of the Graph is therefor not used at all, and instead
+ *          the weight is incremented by 1 in each step.
  *
  * @author  Paul Thieme
  * @date    10/17/2015
@@ -95,64 +111,74 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
 
     cl_uint bufStartVertex = startVertex;
-    cl_int bufVertexCount = data.vertexCount;
-    cl_int bufEdgeCount = data.edgeCount;
+    cl_uint bufVertexCount = data.vertexCount;
+    cl_uint bufEdgeCount = data.edgeCount;
     //  setup the buffers for the GPU
     cl::Buffer bufVertex(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufVertexCount, data.vertexArray);
+        sizeof(cl_uint) * bufVertexCount, data.vertexArray);
     cl::Buffer bufEdges(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufEdgeCount, data.edgeArray);
+        sizeof(cl_uint) * bufEdgeCount, data.edgeArray);
 
     //  will be generated and used only by the GPU
     //  -> no copying from host to device, only AFTER processing for the result
-    cl::Buffer bufFrontier  (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufVisited   (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufCost      (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufCostUpdate(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufPrevious  (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufFrontier(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufVisited (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufCosts   (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufPrevious(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
 
     cl::Kernel kernelInit(prog, "bfs_init");
-    kernelInit.setArg(0, bufFrontier);
-    kernelInit.setArg(1, bufVisited);
-    kernelInit.setArg(2, bufCost);
-    kernelInit.setArg(3, bufCostUpdate);
-    kernelInit.setArg(4, bufPrevious);
-    kernelInit.setArg(5, bufVertexCount);
-    kernelInit.setArg(6, bufStartVertex);
+    cl::Kernel kernelStageOne(prog, "bfs_stage");
+
+    try {
+        kernelInit.setArg(0, bufFrontier);
+        kernelInit.setArg(1, bufVisited);
+        kernelInit.setArg(2, bufCosts);
+        kernelInit.setArg(3, bufPrevious);
+        kernelInit.setArg(4, bufVertexCount);
+        kernelInit.setArg(5, bufStartVertex);
+
+        kernelStageOne.setArg(0, bufVertex);
+        kernelStageOne.setArg(1, bufEdges);
+        kernelStageOne.setArg(2, bufFrontier);
+        kernelStageOne.setArg(3, bufVisited);
+        kernelStageOne.setArg(4, bufCosts);
+        kernelStageOne.setArg(5, bufPrevious);
+        kernelStageOne.setArg(6, bufVertexCount);
+        kernelStageOne.setArg(7, bufEdgeCount);
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << std::endl;
+        std::cerr << err.err() << std::endl;
+        throw;
+    }
 
     //  initialize buffers on the GPU
     queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount));
-    //  read the output and write it to the output buffer
-    auto ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier,   CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-    auto ptrVisited  = (cl_int*)queue.enqueueMapBuffer(bufVisited,    CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-    auto ptrCost     = (cl_int*)queue.enqueueMapBuffer(bufCost,       CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-    auto ptrCostUp   = (cl_int*)queue.enqueueMapBuffer(bufCostUpdate, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-    auto ptrPrev     = (cl_int*)queue.enqueueMapBuffer(bufPrevious,   CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-
-    std::cout << "Frontier is empty? " << frontierEmpty(ptrFrontier, bufVertexCount) << std::endl;
-
-    //  print the result
-    for (unsigned int i = 0; i < bufVertexCount; ++i)
+    
+    //  run BFS until finish
+    //  calculate more than one stage each loop to keep the GPU busy
+    unsigned int i = 0;
+    bool keepRunning = true;
+    do 
     {
-        std::cout << i << "\t";
-        std::cout << *(ptrFrontier + i) << "\t";
-        std::cout << *(ptrVisited  + i) << "\t";
-        std::cout << *(ptrCost + i)     << "\t";
-        std::cout << *(ptrCostUp + i)   << "\t";
-        std::cout << *(ptrPrev + i)     << "\t" << std::endl;
-    }
+        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
 
-    cl::Kernel kernelStageOne(prog, "bfs_stage_one");
-    kernelStageOne.setArg(0, bufVertex);
-    kernelStageOne.setArg(1, bufEdges);
-    kernelStageOne.setArg(2, bufFrontier);
-    kernelStageOne.setArg(3, bufVisited);
-    kernelStageOne.setArg(4, bufCost);
-    kernelStageOne.setArg(5, bufCostUpdate);
-    kernelStageOne.setArg(6, bufPrevious);
-    kernelStageOne.setArg(7, bufVertexCount);
-    kernelStageOne.setArg(8, bufEdgeCount);
+        //  Map Frontier Buffer into host memory and check if it is empty
+        //  If empty exit loop and print results, otherwise keep running
+        auto ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
+        keepRunning = (false == frontierEmpty(ptrFrontier, bufVertexCount));
 
+        //  cleanup memory so we can use it in the kernel again
+        queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
+        ++i;
+    } while (keepRunning);
+
+    std::cout << "Loops needed: " << i << std::endl;
     return;
 }
 
@@ -167,11 +193,11 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
  * @param   argc            The argc.
  * @param [in,out]  argv    If non-null, the argv.
  */
-
 void runDijkstra(int argc, char* argv[])
 {
+    srand(time(nullptr));
     GraphData data;
-    generateGraph(&data, 300, 5);
+    generateGraph(&data, 10000000, 10);
 
     cout << "Vertex count: " << data.vertexCount << std::endl;
     cout << "Edge   count: " << data.edgeCount   << std::endl;
@@ -183,7 +209,7 @@ void runDijkstra(int argc, char* argv[])
 
         //  select a platform
         auto selectedPlatform = selectClPlatform(platforms);
-        std::cout << "You choose Platform #" << selectedPlatform << std::endl;
+        std::cout << "You choose Platform #" << platforms[selectedPlatform].getInfo<CL_PLATFORM_NAME>() << std::endl;
 
         //  select a specific device on that platform
         auto selectedDevice = selectClDevice(platforms[selectedPlatform]);
