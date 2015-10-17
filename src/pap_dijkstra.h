@@ -26,13 +26,13 @@
 
 typedef struct  
 {
-    unsigned int  vertexCount;
-    unsigned int* vertexArray;
+    int  vertexCount;
+    int* vertexArray;
 
-    unsigned int  edgeCount;
-    unsigned int* edgeArray;
+    int  edgeCount;
+    int* edgeArray;
 
-    unsigned int* weightArray;
+    int* weightArray;
 } GraphData ;
 
 
@@ -41,12 +41,14 @@ int selectClPlatform(std::vector<cl::Platform> platforms);
 cl::Device selectClDevice(cl::Platform& platform);
 std::string loadFileContent(std::string filename);
 
-bool frontierEmpty(const cl_int* frontier, unsigned int vertexCount);
-unsigned int frontierSize (const cl_int* frontier, unsigned int vertexCount);
+bool frontierEmpty(const cl_int* frontier, int vertexCount);
+int frontierSize (const cl_int* frontier, int vertexCount);
 void generateGraph(GraphData* data, int vertexCount, int neighborsPerVertex);
 
 //  run the program
-void runBreadthFirstSearch(GraphData& data);
+void runBreadthFirstSearch(cl::Context& context, cl::Device& device,
+    GraphData& data,
+    int startVertex, int endVertex);
 void runDijkstra(int argc, char* argv[]);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
