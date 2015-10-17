@@ -155,13 +155,8 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 
     //  initialize buffers on the GPU
     queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount));
+    queue.finish();
 
-    {
-        auto ptrVisited = (cl_int*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-        auto visitedSize = frontierSize(ptrVisited, bufVertexCount);
-        std::cout << "Visited Size before: " << visitedSize << std::endl;
-    }
-    
     //  run BFS until finish
     //  calculate more than one stage each loop to keep the GPU busy
     unsigned int i = 0;
@@ -169,11 +164,12 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     do 
     {
         auto ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-        auto frontSize = frontierSize(ptrFrontier, bufVertexCount);
-        std::cout << "Vorher: " << frontSize << ", ";
+        auto frontSizeVorher = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
+        queue.finish();
 
         queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.finish();
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
@@ -182,15 +178,20 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         //  Map Frontier Buffer into host memory and check if it is empty
         //  If empty exit loop and print results, otherwise keep running
         ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
-        frontSize = frontierSize(ptrFrontier, bufVertexCount);
-        //  cleanup memory so we can use it in the kernel again
+        auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
-        std::cout << "nachher " << frontSize << std::endl;
+        std::cout << "Vorher: " << frontSizeVorher << ", ";
+        std::cout << "nachher " << frontSizeDanach << std::endl;
         ++i;
-        keepRunning = frontSize;
+        keepRunning = frontSizeDanach;
     } while (keepRunning);
 
+    auto ptrVisited = (cl_int*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
+    auto visited = frontierSize(ptrVisited, bufVertexCount);
+    queue.enqueueUnmapMemObject(bufVisited, ptrVisited);
+
+    std::cout << visited << " visited, thats % " << (float(visited) / bufVertexCount) * 100 << std::endl;
     std::cout << "Loops needed: " << i << std::endl;
     return;
 }
@@ -246,5 +247,9 @@ void runDijkstra(int argc, char* argv[])
         std::cerr << err.what() << std::endl;
         std::cerr << err.err() << std::endl;
     }
+
+    delete[] data.edgeArray;
+    delete[] data.vertexArray;
+    delete[] data.weightArray;
     cin.get();
 }

@@ -5,6 +5,7 @@
 
 int selectClPlatform(std::vector<cl::Platform> platforms)
 {
+    return 0;
     if (platforms.size() == 1)
         return 0;
 

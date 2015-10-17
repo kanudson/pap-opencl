@@ -2,7 +2,7 @@
 ///
 /// This is part 1 of the Kernel from Algorithm 4 in the paper
 ///
-kernel void bfs_stage(global int *vertexArray, global int *edgeArray,
+kernel void bfs_stage(global read_only int *vertexArray, global read_only int *edgeArray,
                           global int *frontierArray, global int *visitedArray,
                           global int *costArray,
                           global int *previousVertexArray,
@@ -31,9 +31,9 @@ kernel void bfs_stage(global int *vertexArray, global int *edgeArray,
 
             if (visitedArray[nextVertexId] == 0)
             {
-                costArray[nextVertexId] = costArray[tid] + 1;
-                frontierArray[nextVertexId] = 1;
-                previousVertexArray[nextVertexId] = tid;
+                atomic_xchg(&costArray[nextVertexId], costArray[tid] + 1);
+                atomic_xchg(&frontierArray[nextVertexId], 1);
+                atomic_xchg(&previousVertexArray[nextVertexId], tid);
             }
         }
     }
