@@ -155,12 +155,15 @@ int ocl_cpphello(int argc, char** argv)
             OUTPUT_WIDTH * OUTPUT_HEIGHT * sizeof(cl_uint),
             outputData);
 
+        cl_uint inpWidth = INPUT_WIDTH;
+        cl_uint masWidth = MASK_WIDTH;
+
         cl::Kernel kernel(prog, "convolve");
         kernel.setArg(0, bufferInput);
         kernel.setArg(1, bufferMask);
         kernel.setArg(2, bufferOutput);
-        kernel.setArg(3, sizeof(cl_uint), &INPUT_WIDTH);
-        kernel.setArg(4, sizeof(cl_uint), &MASK_WIDTH);
+        kernel.setArg(3, sizeof(cl_uint), &inpWidth);
+        kernel.setArg(4, sizeof(cl_uint), &masWidth);
         
         //  run the kernel
         que.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(INPUT_WIDTH * INPUT_HEIGHT));
