@@ -4,9 +4,10 @@
 #include <string>
 
 #include "cppcl.hpp"
+#include "pap_dijkstra.h"
 
 
-//  entry points
+//  entry points for testing
 int convolve(int argc, char*argv[]);
 int ocl_cpphello(int argc, char** argv);
 
@@ -14,7 +15,7 @@ int ocl_cpphello(int argc, char** argv);
 int main(int argc, char* argv[])
 {
     try {
-        ocl_cpphello(argc, argv);
+        runDijkstra(argc, argv);
     }
     catch (const char* msg)
     {

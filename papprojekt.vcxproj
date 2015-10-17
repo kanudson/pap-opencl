@@ -129,9 +129,12 @@
     <ClCompile Include="src\convolve_cpp.cpp" />
     <ClCompile Include="src\cppcl.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\pap_dijkstra.cpp" />
+    <ClCompile Include="src\pap_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cppcl.hpp" />
+    <ClInclude Include="src\pap_dijkstra.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Welcome" />
