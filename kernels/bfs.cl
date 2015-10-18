@@ -4,7 +4,7 @@
 ///
 kernel void bfs_stage(global read_only int *vertexArray, global read_only int *edgeArray,
                           global int *frontierArray, global int *visitedArray,
-                          global int *costArray,
+                          global int *costArray, global int *toVisitNext,
                           global int *previousVertexArray,
                           int vertexCount, int edgeCount)
 {
@@ -31,11 +31,27 @@ kernel void bfs_stage(global read_only int *vertexArray, global read_only int *e
 
             if (visitedArray[nextVertexId] == 0)
             {
-                atomic_xchg(&costArray[nextVertexId], costArray[tid] + 1);
-                atomic_xchg(&frontierArray[nextVertexId], 1);
-                atomic_xchg(&previousVertexArray[nextVertexId], tid);
+                costArray[nextVertexId] = costArray[tid] + 1;
+                toVisitNext[nextVertexId] = 1;
+                previousVertexArray[nextVertexId] = tid;
             }
         }
+    }
+}
+
+
+kernel void bfs_sync(global read_only int *vertexArray, global read_only int *edgeArray,
+                          global int *frontierArray, global int *visitedArray,
+                          global int *costArray, global int *toVisitNext,
+                          global int *previousVertexArray,
+                          int vertexCount, int edgeCount)
+{
+    int tid = get_global_id(0);
+
+    if (toVisitNext[tid] != 0)
+    {
+        frontierArray[tid] = 1;
+        toVisitNext[tid] = 0;
     }
 }
 

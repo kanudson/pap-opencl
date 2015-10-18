@@ -124,10 +124,12 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     cl::Buffer bufFrontier(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
     cl::Buffer bufVisited (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
     cl::Buffer bufCosts   (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufNext    (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
     cl::Buffer bufPrevious(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
 
     cl::Kernel kernelInit(prog, "bfs_init");
     cl::Kernel kernelStageOne(prog, "bfs_stage");
+    cl::Kernel kernelStageTwo(prog, "bfs_sync");
 
     try {
         kernelInit.setArg(0, bufFrontier);
@@ -142,9 +144,20 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         kernelStageOne.setArg(2, bufFrontier);
         kernelStageOne.setArg(3, bufVisited);
         kernelStageOne.setArg(4, bufCosts);
-        kernelStageOne.setArg(5, bufPrevious);
-        kernelStageOne.setArg(6, bufVertexCount);
-        kernelStageOne.setArg(7, bufEdgeCount);
+        kernelStageOne.setArg(5, bufNext);
+        kernelStageOne.setArg(6, bufPrevious);
+        kernelStageOne.setArg(7, bufVertexCount);
+        kernelStageOne.setArg(8, bufEdgeCount);
+
+        kernelStageTwo.setArg(0, bufVertex);
+        kernelStageTwo.setArg(1, bufEdges);
+        kernelStageTwo.setArg(2, bufFrontier);
+        kernelStageTwo.setArg(3, bufVisited);
+        kernelStageTwo.setArg(4, bufCosts);
+        kernelStageTwo.setArg(5, bufNext);
+        kernelStageTwo.setArg(6, bufPrevious);
+        kernelStageTwo.setArg(7, bufVertexCount);
+        kernelStageTwo.setArg(8, bufEdgeCount);
     }
     catch (cl::Error err)
     {
@@ -170,6 +183,8 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 
         queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
         queue.finish();
+        queue.enqueueNDRangeKernel(kernelStageTwo, cl::NullRange, cl::NDRange(bufVertexCount));
+        queue.finish();
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
         //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
@@ -181,7 +196,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
-        std::cout << "Vorher: " << frontSizeVorher << ", ";
+        std::cout << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
         std::cout << "nachher " << frontSizeDanach << std::endl;
         ++i;
         keepRunning = frontSizeDanach;
@@ -211,8 +226,8 @@ void runDijkstra(int argc, char* argv[])
 {
     srand(time(nullptr));
 
-    int vertexCount  = 500000;
-    int edgesPerVert = 5;
+    int vertexCount  = 50000000;
+    int edgesPerVert = 10;
     int startVertex = rand() % vertexCount;
     int endVertex = rand() % vertexCount;
 
