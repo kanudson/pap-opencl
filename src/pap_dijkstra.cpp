@@ -29,27 +29,6 @@
 using namespace std;
 
 
-void generateGraph(GraphData* data, int vertexCount, int neighborsPerVertex)
-{
-    data->vertexCount = vertexCount;
-    data->vertexArray = new int[vertexCount];
-
-    data->edgeCount = vertexCount * neighborsPerVertex;
-    data->edgeArray = new int[data->edgeCount];
-
-    data->weightArray = new int[data->edgeCount];
-
-    for (int i = 0; i < vertexCount; ++i)
-        data->vertexArray[i] = i * neighborsPerVertex;
-
-    for (int i = 0; i < data->edgeCount; ++i)
-    {
-        data->edgeArray[i] = rand() % vertexCount;
-        data->weightArray[i] = rand() % 60;
-    }
-}
-
-
 bool frontierEmpty(const cl_int* frontier, int vertexCount)
 {
     bool running = true;
@@ -90,7 +69,7 @@ int frontierSize(const cl_int* frontier, int vertexCount)
  * @param   startVertex     The Vertex in the Graph to start from.
  * @param   endVertex       The end vertex of the route
  */
-void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& data,
+void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
                            int startVertex, int endVertex)
 {
     cl::CommandQueue queue(context);
@@ -111,13 +90,13 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
 
     cl_int bufStartVertex = startVertex;
-    cl_int bufVertexCount = data.vertexCount;
-    cl_int bufEdgeCount = data.edgeCount;
+    cl_int bufVertexCount = graph.VertexCount();
+    cl_int bufEdgeCount = graph.EdgeCount();
     //  setup the buffers for the GPU
     cl::Buffer bufVertex(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufVertexCount, data.vertexArray);
+        sizeof(cl_int) * bufVertexCount, graph.GetVertices());
     cl::Buffer bufEdges(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufEdgeCount, data.edgeArray);
+        sizeof(cl_int) * bufEdgeCount, graph.GetEdges());
 
     //  will be generated and used only by the GPU
     //  -> no copying from host to device, only AFTER processing for the result
@@ -236,8 +215,13 @@ void runDijkstra(int argc, char* argv[])
     cout << "Edge   count: " << vertexCount*edgesPerVert << ", (";
     cout << (sizeof(int) * vertexCount * edgesPerVert) / 1024 / 1024 << " MB)" << std::endl;
 
-    GraphData data;
-    generateGraph(&data, vertexCount, edgesPerVert);
+    //  Graphen erstellen
+    cout << "Creating Graph #1" << endl;
+    GraphData graph(vertexCount, edgesPerVert, 1234);
+    cout << "Creating Graph #2" << endl;
+    GraphData graph2(vertexCount, edgesPerVert, 1235);
+    
+    cout << "checking if both are the same" << endl;
 
     try {
         //  get all available platforms
@@ -254,7 +238,7 @@ void runDijkstra(int argc, char* argv[])
 
         //  create a OpenCL context for that device
         cl::Context context(selectedDevice);
-        runBreadthFirstSearch(context, selectedDevice, data, startVertex, endVertex);
+        runBreadthFirstSearch(context, selectedDevice, graph, startVertex, endVertex);
     }
     catch (cl::Error& err)
     {
@@ -263,8 +247,5 @@ void runDijkstra(int argc, char* argv[])
         std::cerr << err.err() << std::endl;
     }
 
-    delete[] data.edgeArray;
-    delete[] data.vertexArray;
-    delete[] data.weightArray;
     cin.get();
 }

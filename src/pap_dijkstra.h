@@ -22,18 +22,7 @@
 
 
 #include "cppcl.hpp"
-
-
-typedef struct  
-{
-    int  vertexCount;
-    int* vertexArray;
-
-    int  edgeCount;
-    int* edgeArray;
-
-    int* weightArray;
-} GraphData ;
+#include "GraphData.h"
 
 
 //  helpers
@@ -43,12 +32,13 @@ std::string loadFileContent(std::string filename);
 
 bool frontierEmpty(const cl_int* frontier, int vertexCount);
 int frontierSize (const cl_int* frontier, int vertexCount);
-void generateGraph(GraphData* data, int vertexCount, int neighborsPerVertex);
 
 //  run the program
-void runBreadthFirstSearch(cl::Context& context, cl::Device& device,
-    GraphData& data,
-    int startVertex, int endVertex);
+void runBreadthFirstSearch(cl::Context& context,
+                           cl::Device& device,
+                           GraphData& data,
+                           int startVertex,
+                           int endVertex);
 void runDijkstra(int argc, char* argv[]);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
