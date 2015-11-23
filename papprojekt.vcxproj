@@ -113,6 +113,7 @@
     <ClCompile>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,18 +123,21 @@
     <ClCompile>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\convolve.cpp" />
     <ClCompile Include="src\convolve_cpp.cpp" />
     <ClCompile Include="src\cppcl.cpp" />
+    <ClCompile Include="src\GraphData.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pap_dijkstra.cpp" />
     <ClCompile Include="src\pap_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cppcl.hpp" />
+    <ClInclude Include="src\GraphData.h" />
     <ClInclude Include="src\pap_dijkstra.h" />
   </ItemGroup>
   <ItemGroup>
