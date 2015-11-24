@@ -9,7 +9,7 @@
 namespace
 {
     const int WEIGHT_LIMIT = 60;
-    const uint64_t NUM_THREADS = 8;
+    const uint64_t NUM_THREADS = 4;
 }
 
 
@@ -19,6 +19,12 @@ GraphData::GraphData(uint32_t vertexCount, uint32_t neighborsPerVertex, uint32_t
     ,m_edges(vertexCount * neighborsPerVertex, 0)
     ,m_weights(vertexCount * neighborsPerVertex, 0)
 {
+    //  TODO: test if the edges and weights vectors can be _fully_ addressed
+    //  with unsigned 32-bit integers
+    uint64_t size = m_edges.size();
+    if (size > UINT32_MAX)
+        throw std::runtime_error("GraphData edges and weights can not be fully addressed\nGraph is too big");
+
     Initialize(seed);
 }
 
@@ -46,28 +52,28 @@ uint64_t GraphData::EdgeCount() const
     return m_edges.size();
 }
 
-int* GraphData::GetVertices()
+uint32_t* GraphData::GetVertices()
 {
     return m_vertices.data();
 }
-int* GraphData::GetEdges()
+uint32_t* GraphData::GetEdges()
 {
     return m_edges.data();
 }
-int* GraphData::GetWeights()
+uint32_t* GraphData::GetWeights()
 {
     return m_weights.data();
 }
 
-const int* GraphData::GetVertices() const
+const uint32_t* GraphData::GetVertices() const
 {
     return m_vertices.data();
 }
-const int* GraphData::GetEdges()    const
+const uint32_t* GraphData::GetEdges()    const
 {
     return m_edges.data();
 }
-const int* GraphData::GetWeights()  const
+const uint32_t* GraphData::GetWeights()  const
 {
     return m_weights.data();
 }
@@ -77,14 +83,14 @@ const int* GraphData::GetWeights()  const
 bool GraphData::Equals(const GraphData & other) const
 {
     //  pointer to the data arrays
-    const int* vertices = GetVertices();
-    const int* edges = GetEdges();
-    const int* weights = GetWeights();
+    auto* vertices = GetVertices();
+    auto* edges = GetEdges();
+    auto* weights = GetWeights();
 
     //  pointers to data of right hand side
-    const int* otherVert = other.GetVertices();
-    const int* otherEdge = other.GetEdges();
-    const int* otherWeig = other.GetWeights();
+    auto* otherVert = other.GetVertices();
+    auto* otherEdge = other.GetEdges();
+    auto* otherWeig = other.GetWeights();
 
     if (other.VertexCount() != m_vertices.size())
         return false;
@@ -122,6 +128,15 @@ bool GraphData::Equals(const GraphData & other) const
     return true;
 }
 
+uint64_t GraphData::CalculateBytes() const
+{
+    uint64_t result;
+
+    result += m_vertices.size();
+
+    return result;
+}
+
 void GraphData::Initialize(uint32_t seed)
 {
     const std::size_t vertexCount = m_vertices.size();
@@ -129,9 +144,9 @@ void GraphData::Initialize(uint32_t seed)
     const std::size_t workLeft = vertexCount % NUM_THREADS;
 
     //  pointer to the data arrays
-    int* vertices = m_vertices.data();
-    int* edges = m_edges.data();
-    int* weights = m_weights.data();
+    auto* vertices = m_vertices.data();
+    auto* edges = m_edges.data();
+    auto* weights = m_weights.data();
 
     //  seed generator for the different generators in each thread
     std::mt19937 engine(seed);
@@ -148,19 +163,19 @@ void GraphData::Initialize(uint32_t seed)
 
         std::thread runner([=]()
         {
-            std::size_t vertexCount = m_vertices.size();
+            uint32_t vertexCount = static_cast<uint32_t>(m_vertices.size());
 
             for (uint64_t i = begin; i < end; ++i)
             {
-                *(vertices + i) = i * m_neighborsPerVertex;
+                *(vertices + i) = static_cast<uint32_t>(i * m_neighborsPerVertex);
             }
 
             //  random generatore uses C++ Random Libs
             //  in this case, we use the mersenne twister engine
             //std::mt19937 rds;
             std::mt19937 threadEngine(currentSeed);
-            std::uniform_int_distribution<int> distrEdges(0, vertexCount);
-            std::uniform_int_distribution<int> distrWeight(0, WEIGHT_LIMIT);
+            std::uniform_int_distribution<uint32_t> distrEdges(0, vertexCount);
+            std::uniform_int_distribution<uint32_t> distrWeight(0, WEIGHT_LIMIT);
             const uint64_t edgeEnd = end * m_neighborsPerVertex;
             for (uint64_t i = begin; i < edgeEnd; ++i)
             {

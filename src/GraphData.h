@@ -21,22 +21,23 @@ public:
     uint64_t VertexCount()  const;
     uint64_t EdgeCount()    const;
 
-    int* GetVertices();
-    int* GetEdges();
-    int* GetWeights();
-    const int* GetVertices() const;
-    const int* GetEdges()    const;
-    const int* GetWeights()  const;
+    uint32_t* GetVertices();
+    uint32_t* GetEdges();
+    uint32_t* GetWeights();
+    const uint32_t* GetVertices() const;
+    const uint32_t* GetEdges()    const;
+    const uint32_t* GetWeights()  const;
 
     bool Equals(const GraphData& other) const;
+    uint64_t CalculateBytes() const;
 
 private:
     void Initialize(uint32_t seed);
 
     const int m_neighborsPerVertex;
-    std::vector<int> m_vertices;
-    std::vector<int> m_edges;
-    std::vector<int> m_weights;
+    std::vector<uint32_t> m_vertices;
+    std::vector<uint32_t> m_edges;
+    std::vector<uint32_t> m_weights;
 };
 
 
