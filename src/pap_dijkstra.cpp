@@ -26,7 +26,7 @@
 using namespace std;
 
 
-bool frontierEmpty(const cl_int* frontier, uint64_t vertexCount)
+bool frontierEmpty(const cl_uint* frontier, uint64_t vertexCount)
 {
     bool running = true;
     for (int i = 0; running && i < vertexCount; ++i)
@@ -37,7 +37,7 @@ bool frontierEmpty(const cl_int* frontier, uint64_t vertexCount)
     return running;
 }
 
-int frontierSize(const cl_int* frontier, uint64_t vertexCount)
+int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
 {
     int count = 0;
     for (int i = 0; i < vertexCount; ++i)
@@ -152,7 +152,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     bool keepRunning = true;
     do 
     {
-        auto ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
+        auto ptrFrontier = (cl_uint*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
         auto frontSizeVorher = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
         queue.finish();
@@ -168,17 +168,18 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 
         //  Map Frontier Buffer into host memory and check if it is empty
         //  If empty exit loop and print results, otherwise keep running
-        ptrFrontier = (cl_int*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
+        ptrFrontier = (cl_uint*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
         auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
         std::cout << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
-        std::cout << "nachher " << frontSizeDanach << std::endl;
+        std::cout << "nachher " << frontSizeDanach << ", ";
+        std::cout << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
         ++i;
         keepRunning = (frontSizeDanach == 0) ? false : true;
     } while (keepRunning);
 
-    auto ptrVisited = (cl_int*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);
+    auto ptrVisited = (cl_uint*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
     auto visited = frontierSize(ptrVisited, bufVertexCount);
     queue.enqueueUnmapMemObject(bufVisited, ptrVisited);
 
