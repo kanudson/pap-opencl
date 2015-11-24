@@ -18,8 +18,8 @@ public:
     GraphData(const GraphData&& rhs) = delete;
     GraphData& operator= (const GraphData& data) = delete;
 
-    uint32_t VertexCount()  const;
-    uint32_t EdgeCount()    const;
+    uint64_t VertexCount()  const;
+    uint64_t EdgeCount()    const;
 
     int* GetVertices();
     int* GetEdges();

@@ -9,7 +9,7 @@
 namespace
 {
     const int WEIGHT_LIMIT = 60;
-    const uint64_t NUM_THREADS = 4;
+    const uint64_t NUM_THREADS = 8;
 }
 
 
@@ -20,6 +20,7 @@ GraphData::GraphData(uint32_t vertexCount, uint32_t neighborsPerVertex, uint32_t
     ,m_weights(vertexCount * neighborsPerVertex, 0)
 {
     Initialize(seed);
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,11 +37,11 @@ GraphData::GraphData(const GraphData & rhs)
 
 
 //////////////////////////////////////////////////////////////////////////
-uint32_t GraphData::VertexCount() const
+uint64_t GraphData::VertexCount() const
 {
     return m_vertices.size();
 }
-uint32_t GraphData::EdgeCount() const
+uint64_t GraphData::EdgeCount() const
 {
     return m_edges.size();
 }
@@ -72,6 +73,7 @@ const int* GraphData::GetWeights()  const
 }
 
 
+//////////////////////////////////////////////////////////////////////////
 bool GraphData::Equals(const GraphData & other) const
 {
     //  pointer to the data arrays
@@ -91,8 +93,8 @@ bool GraphData::Equals(const GraphData & other) const
         return false;
 
     //  check vertex data
-    uint32_t vertexSize = m_vertices.size();
-    for (uint32_t i = 0; i < vertexSize; ++i)
+    uint64_t vertexSize = m_vertices.size();
+    for (uint64_t i = 0; i < vertexSize; ++i)
     {
         if (*vertices != *otherVert)
             return false;
@@ -102,8 +104,8 @@ bool GraphData::Equals(const GraphData & other) const
     }
 
     //  check edge and weight data
-    uint32_t edgeSize = m_edges.size();
-    for (uint32_t i = 0; i < edgeSize; ++i)
+    uint64_t edgeSize = m_edges.size();
+    for (uint64_t i = 0; i < edgeSize; ++i)
     {
         if (*edges != *otherEdge)
             return false;
@@ -148,7 +150,7 @@ void GraphData::Initialize(uint32_t seed)
         {
             std::size_t vertexCount = m_vertices.size();
 
-            for (uint32_t i = begin; i < end; ++i)
+            for (uint64_t i = begin; i < end; ++i)
             {
                 *(vertices + i) = i * m_neighborsPerVertex;
             }
