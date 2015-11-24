@@ -113,7 +113,7 @@
     <ClCompile>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,7 +123,7 @@
     <ClCompile>
       <PreprocessorDefinitions>
       </PreprocessorDefinitions>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -141,6 +141,7 @@
     <ClInclude Include="src\pap_dijkstra.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="kernels\bfs.cl" />
     <None Include="Welcome" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
