@@ -9,9 +9,12 @@
 class GraphData
 {
 public:
+    //  Initializes a graph with a possible seed
     GraphData(uint32_t vertexCount, uint32_t neighborsPerVertex, uint32_t seed = 0);
 
-    GraphData(const GraphData& rhs) = delete;
+    //  Copies the graph data
+    GraphData(const GraphData& rhs);
+
     GraphData(const GraphData&& rhs) = delete;
     GraphData& operator= (const GraphData& data) = delete;
 

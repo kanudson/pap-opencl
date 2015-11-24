@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <future>
+#include <iostream>
 
 
 namespace
@@ -19,6 +20,21 @@ GraphData::GraphData(uint32_t vertexCount, uint32_t neighborsPerVertex, uint32_t
     ,m_weights(vertexCount * neighborsPerVertex, 0)
 {
     Initialize(seed);
+
+
+//////////////////////////////////////////////////////////////////////////
+GraphData::GraphData(const GraphData & rhs)
+    :m_neighborsPerVertex(rhs.m_neighborsPerVertex)
+    ,m_vertices(rhs.m_vertices)
+    ,m_edges(rhs.m_edges)
+    ,m_weights(rhs.m_weights)
+{
+    //  TODO: maybe print an info that the copy constructor got called
+    //  because its f'n expensive?!
+    std::cerr << "help pls, GraphData copy called!" << std::endl;
+}
+
+
 }
 
 
