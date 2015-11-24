@@ -23,13 +23,10 @@
 #include <iostream>
 #include <vector>
 
-#include <cstdlib>
-#include <ctime>
-
 using namespace std;
 
 
-bool frontierEmpty(const cl_int* frontier, int vertexCount)
+bool frontierEmpty(const cl_int* frontier, uint64_t vertexCount)
 {
     bool running = true;
     for (int i = 0; running && i < vertexCount; ++i)
@@ -40,7 +37,7 @@ bool frontierEmpty(const cl_int* frontier, int vertexCount)
     return running;
 }
 
-int frontierSize(const cl_int* frontier, int vertexCount)
+int frontierSize(const cl_int* frontier, uint64_t vertexCount)
 {
     int count = 0;
     for (int i = 0; i < vertexCount; ++i)
@@ -64,13 +61,13 @@ int frontierSize(const cl_int* frontier, int vertexCount)
  * @author  Paul Thieme
  * @date    10/17/2015
  *
- * @param [in]  context   The OpenCL Context.
+ * @param [in]  context     The OpenCL Context.
  * @param [in]  data        The GraphData structure to run on.
  * @param   startVertex     The Vertex in the Graph to start from.
  * @param   endVertex       The end vertex of the route
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
-                           int startVertex, int endVertex)
+                           uint32_t startVertex, uint32_t endVertex)
 {
     cl::CommandQueue queue(context);
 
@@ -89,22 +86,22 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         throw;
     }
 
-    cl_int bufStartVertex = startVertex;
-    cl_int bufVertexCount = graph.VertexCount();
-    cl_int bufEdgeCount = graph.EdgeCount();
+    cl_uint bufStartVertex = startVertex;
+    cl_ulong bufVertexCount = graph.VertexCount();
+    cl_ulong bufEdgeCount = graph.EdgeCount();
     //  setup the buffers for the GPU
     cl::Buffer bufVertex(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufVertexCount, graph.GetVertices());
+        sizeof(cl_uint) * bufVertexCount, graph.GetVertices());
     cl::Buffer bufEdges(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        sizeof(cl_int) * bufEdgeCount, graph.GetEdges());
+        sizeof(cl_uint) * bufEdgeCount, graph.GetEdges());
 
     //  will be generated and used only by the GPU
     //  -> no copying from host to device, only AFTER processing for the result
-    cl::Buffer bufFrontier(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufVisited (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufCosts   (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufNext    (context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
-    cl::Buffer bufPrevious(context, CL_MEM_READ_WRITE, sizeof(cl_int) * bufVertexCount);
+    cl::Buffer bufFrontier(context, CL_MEM_READ_WRITE, sizeof(cl_uint) * bufVertexCount);
+    cl::Buffer bufVisited (context, CL_MEM_READ_WRITE, sizeof(cl_uint) * bufVertexCount);
+    cl::Buffer bufCosts   (context, CL_MEM_READ_WRITE, sizeof(cl_uint) * bufVertexCount);
+    cl::Buffer bufNext    (context, CL_MEM_READ_WRITE, sizeof(cl_uint) * bufVertexCount);
+    cl::Buffer bufPrevious(context, CL_MEM_READ_WRITE, sizeof(cl_uint) * bufVertexCount);
 
     cl::Kernel kernelInit(prog, "bfs_init");
     cl::Kernel kernelStageOne(prog, "bfs_stage");
@@ -178,7 +175,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         std::cout << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
         std::cout << "nachher " << frontSizeDanach << std::endl;
         ++i;
-        keepRunning = frontSizeDanach;
+        keepRunning = (frontSizeDanach == 0) ? false : true;
     } while (keepRunning);
 
     auto ptrVisited = (cl_int*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_int) * bufVertexCount);

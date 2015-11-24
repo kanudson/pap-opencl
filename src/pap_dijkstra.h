@@ -37,8 +37,8 @@ int frontierSize (const cl_int* frontier, int vertexCount);
 void runBreadthFirstSearch(cl::Context& context,
                            cl::Device& device,
                            GraphData& data,
-                           int startVertex,
-                           int endVertex);
+                           uint32_t startVertex,
+                           uint32_t endVertex);
 void runDijkstra(int argc, char* argv[]);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
