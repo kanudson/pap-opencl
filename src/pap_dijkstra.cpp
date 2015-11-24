@@ -204,8 +204,8 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 void runDijkstra(int argc, char* argv[])
 {
     srand(time(nullptr));
-    const int vertexCount  = 5000000;
-    const int edgesPerVert = 5;
+    const int vertexCount  = 50000000;
+    const int edgesPerVert = 8;
     const int startVertex = rand() % vertexCount;
     const int endVertex = rand() % vertexCount;
 
@@ -216,22 +216,9 @@ void runDijkstra(int argc, char* argv[])
     cout << (sizeof(int) * vertexCount * edgesPerVert) / 1024 / 1024 << " MB)" << std::endl;
 
     //  Graphen erstellen
-    cout << "Creating Graph #1" << endl;
+    cout << "Creating Graphs" << endl;
     GraphData graph(vertexCount, edgesPerVert, 1234);
-    cout << "Creating Graph #2" << endl;
-    GraphData graph2(vertexCount, edgesPerVert, 1235);
     
-    cout << "checking if both are the same" << endl;
-    if (graph.Equals(graph2))
-        cout << "Graph1 equals Graph2" << endl;
-    else
-        cout << "Graph1 does NOT equal Graph2" << endl;
-
-    if (graph.Equals(graph))
-        cout << "Graph1 equals Graph1" << endl;
-    else
-        cout << "Graph1 does NOT equal Graph1" << endl;
-
     try {
         //  get all available platforms
         std::vector<cl::Platform> platforms;
