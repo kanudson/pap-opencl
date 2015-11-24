@@ -10,6 +10,9 @@ kernel void bfs_stage(global read_only uint* vertexArray, global read_only uint*
 {
     ulong tid = get_global_id(0);
 
+    if (tid > vertexCount)
+        return;
+
     //  only process the vertex when it's in the frontier
     if (frontierArray[tid] != 0)
     {
@@ -48,6 +51,9 @@ kernel void bfs_sync(global read_only uint* vertexArray, global read_only uint* 
 {
     ulong tid = get_global_id(0);
 
+    if (tid > vertexCount)
+        return;
+
     if (toVisitNext[tid] != 0)
     {
         frontierArray[tid] = 1;
@@ -64,6 +70,9 @@ kernel void bfs_init(global uint* frontierArray, global uint* visitedArray,
                      ulong vertexCount, uint sourceVertex)
 {
     uint tid = get_global_id(0);
+
+    if (tid > vertexCount)
+        return;
 
     if (sourceVertex == tid)
     {
