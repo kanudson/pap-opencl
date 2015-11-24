@@ -18,19 +18,15 @@ public:
     GraphData(const GraphData&& rhs) = delete;
     GraphData& operator= (const GraphData& data) = delete;
 
-    std::size_t VertexCount()   { return m_vertices.size(); }
-    std::size_t EdgeCount()     { return m_edges.size(); }
+    uint32_t VertexCount()  const;
+    uint32_t EdgeCount()    const;
 
-    std::size_t VertexCount() const { return m_vertices.size(); }
-    std::size_t EdgeCount()   const { return m_edges.size(); }
-
-    int* GetVertices()  { return m_vertices.data(); }
-    int* GetEdges()     { return m_edges.data(); }
-    int* GetWeights()   { return m_weights.data(); }
-
-    const int* GetVertices() const { return m_vertices.data(); }
-    const int* GetEdges()    const { return m_edges.data(); }
-    const int* GetWeights()  const { return m_weights.data(); }
+    int* GetVertices();
+    int* GetEdges();
+    int* GetWeights();
+    const int* GetVertices() const;
+    const int* GetEdges()    const;
+    const int* GetWeights()  const;
 
     bool Equals(const GraphData& other) const;
 

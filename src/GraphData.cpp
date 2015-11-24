@@ -35,6 +35,40 @@ GraphData::GraphData(const GraphData & rhs)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+uint32_t GraphData::VertexCount() const
+{
+    return m_vertices.size();
+}
+uint32_t GraphData::EdgeCount() const
+{
+    return m_edges.size();
+}
+
+int* GraphData::GetVertices()
+{
+    return m_vertices.data();
+}
+int* GraphData::GetEdges()
+{
+    return m_edges.data();
+}
+int* GraphData::GetWeights()
+{
+    return m_weights.data();
+}
+
+const int* GraphData::GetVertices() const
+{
+    return m_vertices.data();
+}
+const int* GraphData::GetEdges()    const
+{
+    return m_edges.data();
+}
+const int* GraphData::GetWeights()  const
+{
+    return m_weights.data();
 }
 
 
@@ -56,6 +90,7 @@ bool GraphData::Equals(const GraphData & other) const
     if (other.EdgeCount() != m_edges.size())
         return false;
 
+    //  check vertex data
     uint32_t vertexSize = m_vertices.size();
     for (uint32_t i = 0; i < vertexSize; ++i)
     {
@@ -66,6 +101,7 @@ bool GraphData::Equals(const GraphData & other) const
         ++otherVert;
     }
 
+    //  check edge and weight data
     uint32_t edgeSize = m_edges.size();
     for (uint32_t i = 0; i < edgeSize; ++i)
     {
