@@ -1,6 +1,4 @@
-
 #include "pap_dijkstra.h"
-
 
 
 int selectClPlatform(std::vector<cl::Platform> platforms)

@@ -20,7 +20,6 @@
 #ifndef  PAP_DIJKSTRA_H
 #define  PAP_DIJKSTRA_H
 
-
 #include "cppcl.hpp"
 #include "GraphData.h"
 
