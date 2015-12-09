@@ -2,6 +2,7 @@
 #define PapDialog_h__
 
 #include "cppcl.hpp"
+#include "GraphData.h"
 
 #include <wx/wx.h>
 
@@ -12,6 +13,10 @@ enum
     PAPEV_TIMER
 };
 
+struct CLDEVICE_CLIENTDATA
+{
+    cl::Device device;
+};
 
 class PapWindow : public wxFrame 
 {
@@ -26,22 +31,37 @@ public:
     //  called, when input in text boxes or the check box changed
     void GraphConfigChanged(wxCommandEvent& ev);
 
+    void RunPathfinding(wxCommandEvent& ev);
+
 private:
     //  Input for graph config
-    wxTextCtrl* tcVertexCount = nullptr;
-    wxTextCtrl* tcEdgePerVec  = nullptr;
-    wxTextCtrl* tcStartVertex = nullptr;
-    wxTextCtrl* tcEndVertex   = nullptr;
-    wxCheckBox* chWeighted    = nullptr;
-    wxButton*   btnGenerate   = nullptr;
-
-    void DisableGraphInputs();
-    void EnableGraphInputs();
+    wxTextCtrl* tcSeed         = nullptr;
+    wxTextCtrl* tcVertexCount  = nullptr;
+    wxTextCtrl* tcEdgePerVec   = nullptr;
+    wxTextCtrl* tcStartVertex  = nullptr;
+    wxTextCtrl* tcEndVertex    = nullptr;
+    wxCheckBox* chWeighted     = nullptr;
+    wxButton*   btnGenerate    = nullptr;
+    wxStaticText* stMemorySize = nullptr;
 
     bool generating = false;
     wxGauge* progressBar = nullptr;
     wxStaticText* stChangedText = nullptr;
     wxTimer* timer = nullptr;
+
+    void DisableGraphInputs();
+    void EnableGraphInputs();
+    void Done();
+
+    void RecalcMemorySize();
+    void FindOpenCLDevices();
+
+    wxStaticBoxSizer* sizerDevices = nullptr;
+    wxStaticBoxSizer* sizerRuntime = nullptr;
+    wxCheckListBox* runselector = nullptr;
+    wxButton* runbutton = nullptr;
+
+    GraphData* graphdata = nullptr;
 };
 
 

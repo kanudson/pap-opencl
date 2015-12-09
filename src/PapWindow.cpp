@@ -1,5 +1,7 @@
 #include "PapWindow.h"
 
+#include "cppcl.hpp"
+
 
 namespace
 {
@@ -20,17 +22,22 @@ PapWindow::PapWindow()
     //  uses a Box Sizer with 2 columns
     auto* st = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Graph configuration"));
     auto gs = new wxGridSizer(2);
-    tcVertexCount = new wxTextCtrl(this, wxID_ANY, DEFAULT_VECCOUNT);
-    tcEdgePerVec  = new wxTextCtrl(this, wxID_ANY, DEFAULT_EDGECOUNT);
-    tcStartVertex = new wxTextCtrl(this, wxID_ANY, DEFAULT_STARTVEC);
-    tcEndVertex   = new wxTextCtrl(this, wxID_ANY, DEFAULT_ENDVEC);
+    tcSeed        = new wxTextCtrl(this, wxID_ANY, wxT("0"));
+    tcVertexCount = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_VECCOUNT));
+    tcEdgePerVec  = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_EDGECOUNT));
+    tcStartVertex = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_STARTVEC));
+    tcEndVertex   = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_ENDVEC));
     chWeighted    = new wxCheckBox(this, wxID_ANY, wxT("create a weighted graph"));
+    wxStaticText* text0 = new wxStaticText(this, wxID_ANY, wxT("seed"));
     wxStaticText* text1 = new wxStaticText(this, wxID_ANY, wxT("vertex count"));
     wxStaticText* text2 = new wxStaticText(this, wxID_ANY, wxT("edges per vertex"));
     wxStaticText* text3 = new wxStaticText(this, wxID_ANY, wxT("start vertex"));
     wxStaticText* text4 = new wxStaticText(this, wxID_ANY, wxT("end vertex"));
     wxStaticText* text5 = new wxStaticText(this, wxID_ANY, wxT(" "));
     btnGenerate = new wxButton(this, BTN_GENERATE_GRAPH, wxT("Generate Graph"));
+    stMemorySize = new wxStaticText(this, wxID_ANY, wxT(""),
+                                    wxDefaultPosition, wxDefaultSize,
+                                    wxALIGN_CENTER_HORIZONTAL);
     stChangedText = new wxStaticText(this, wxID_ANY, wxT(">>> Graph config has changed <<<"),
                                      wxDefaultPosition, wxDefaultSize,
                                      wxALIGN_CENTER_HORIZONTAL);
@@ -38,8 +45,10 @@ PapWindow::PapWindow()
     progressBar = new wxGauge(this, wxID_ANY, 100);
     progressBar->Disable();
 
-    wxSizerFlags flags;
+    wxSizerFlags flags(0);
     flags.Center().Top().Expand().Border(wxALL, 5);
+    gs->Add(text0, flags);
+    gs->Add(tcSeed, flags);
     gs->Add(text1, flags);
     gs->Add(tcVertexCount, flags);
     gs->Add(text2, flags);
@@ -50,25 +59,36 @@ PapWindow::PapWindow()
     gs->Add(tcEndVertex, flags);
     gs->Add(text5, flags);
     gs->Add(chWeighted, flags);
-    st->Add(gs);
+    st->Add(gs, flags);
+    st->Add(stMemorySize, flags);
     st->Add(btnGenerate, flags);
     st->Add(progressBar, flags);
     st->Add(stChangedText, flags);
+
+    RecalcMemorySize();
+    sizerDevices = new wxStaticBoxSizer(wxVERTICAL, this, wxT("OpenCL Platforms"));
+    sizerRuntime = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Run stuff"));
+    runselector = new wxCheckListBox(this, wxID_ANY);
+    runbutton = new wxButton(this, wxID_ANY, "run on selected devices");
+    runbutton->Disable();
+    sizerRuntime->Add(runselector, flags);
+    sizerRuntime->Add(runbutton, flags);
+    FindOpenCLDevices();
 
     //  Bind events
     Bind(wxEVT_TIMER, &PapWindow::OnTimer, this);
     btnGenerate->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::GenerateGraph, this);
     tcVertexCount->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
     tcEdgePerVec->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
-    //  start and end vertex are only relevant for runtime, not for graph creation
-    //tcStartVertex->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
-    //tcEndVertex->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
     chWeighted->Bind(wxEVT_CHECKBOX, &PapWindow::GraphConfigChanged, this);
+    runbutton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::RunPathfinding, this);
 
-    auto* vbox = new wxBoxSizer(wxVERTICAL);
-    vbox->Add(st);
+    auto* hbox = new wxBoxSizer(wxHORIZONTAL);
+    hbox->Add(st, flags);
+    hbox->Add(sizerDevices, flags);
+    hbox->Add(sizerRuntime, flags);
     SetBackgroundColour(*wxWHITE);
-    SetSizerAndFit(vbox);
+    SetSizerAndFit(hbox);
     Center();
 }
 
@@ -82,33 +102,63 @@ void PapWindow::GenerateGraph(wxCommandEvent & ev)
     progressBar->Pulse();
     DisableGraphInputs();
 
-    //  fire up the creation task and notifier
-    //  don't wait for completion, rather get notified when all is done
-    timer->Start(2000, true);
+    wxString strseed   = tcSeed->GetLineText(0);
+    wxString strvcount = tcVertexCount->GetLineText(0);
+    wxString strecount = tcEdgePerVec->GetLineText(0);
+
+    unsigned long seed, vcount, ecount;
+    strseed.ToULong(&seed);
+    strvcount.ToULong(&vcount);
+    strecount.ToULong(&ecount);
+    
+    if (graphdata)
+        delete graphdata;
+
+    graphdata = new GraphData(vcount, ecount, seed);
+    Done();
 }
 
 void PapWindow::GenerateDone(wxCommandEvent & ev)
 {
     //  notification that all _is_ actually done
+    Done();
 }
 
 void PapWindow::OnTimer(wxTimerEvent & ev)
 {
-    stChangedText->Hide();
-    progressBar->SetValue(0);
-    progressBar->Disable();
-    generating = false;
-    EnableGraphInputs();
+    Done();
 }
 
 void PapWindow::GraphConfigChanged(wxCommandEvent & ev)
 {
     stChangedText->Show();
     btnGenerate->Enable();
+    RecalcMemorySize();
+}
+
+void PapWindow::RunPathfinding(wxCommandEvent & ev)
+{
+    int count;
+    wxArrayInt selection;
+    count = runselector->GetCheckedItems(selection);
+
+    for (int i = 0; i < count; ++i)
+    {
+        int id = selection.Item(i);
+        CLDEVICE_CLIENTDATA* data = static_cast<CLDEVICE_CLIENTDATA*>(runselector->GetClientData(id));
+
+        //  TODO: actually run the pathfinding algorithm
+        wxString devName = data->device.getInfo<CL_DEVICE_NAME>();
+        wxString devType = (data->device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
+        wxString devVendor = data->device.getInfo<CL_DEVICE_VENDOR>();
+        wxString selname = wxString::Format(wxT("%s (%s) %s"), devVendor, devType, devName);
+        wxMessageBox(selname);
+    }
 }
 
 void PapWindow::DisableGraphInputs()
 {
+    tcSeed->Disable();
     tcVertexCount->Disable();
     tcEdgePerVec->Disable();
     tcStartVertex->Disable();
@@ -118,9 +168,109 @@ void PapWindow::DisableGraphInputs()
 
 void PapWindow::EnableGraphInputs()
 {
+    tcSeed->Enable();
     tcVertexCount->Enable();
     tcEdgePerVec->Enable();
     tcStartVertex->Enable();
     tcEndVertex->Enable();
     chWeighted->Enable();
+}
+
+void PapWindow::Done()
+{
+    stChangedText->Hide();
+    progressBar->SetValue(0);
+    progressBar->Disable();
+    generating = false;
+    EnableGraphInputs();
+    runbutton->Enable();
+}
+
+void PapWindow::RecalcMemorySize()
+{
+    if (!tcVertexCount || !tcEdgePerVec || !chWeighted)
+        return;
+
+    wxString vcount = tcVertexCount->GetLineText(0);
+    wxString ecount = tcEdgePerVec->GetLineText(0);
+    bool weighted   = chWeighted->IsChecked();
+
+    uint64_t vc, ec;
+    if (!vcount.ToULongLong(&vc) || !ecount.ToULongLong(&ec))
+        return;
+
+    int32_t sVertexMB = ((vc / 1024) / 1024) * sizeof(cl_uint);
+    int32_t sEdgeMB   = sVertexMB * ec;
+    int32_t sizeMB = sVertexMB + sEdgeMB + (sVertexMB * 5);
+    wxString usage = wxString::Format(wxT("Memory usage: ~%iMB (%iMB + %iMB + [5 x %iMB]"),
+                                      sizeMB, sVertexMB, sEdgeMB, sVertexMB);
+    stMemorySize->SetLabelText(usage);
+}
+
+void PapWindow::FindOpenCLDevices()
+{
+    //  empty sizer, delete all child windows
+    sizerDevices->Clear(true);
+
+    wxSizerFlags flags(0);
+    flags.Top().Expand().Border(wxALL, 5);
+
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
+
+    //  iterate through all platforms
+    for (auto platform : platforms)
+    {
+        wxString strVendor  = platform.getInfo<CL_PLATFORM_VENDOR>();
+        wxString strName    = platform.getInfo<CL_PLATFORM_NAME>();
+        wxString strVersion = platform.getInfo<CL_PLATFORM_VERSION>();
+        wxString strProfile = platform.getInfo<CL_PLATFORM_PROFILE>();
+        
+        wxString boxtitle = strVendor + " " + strName;
+
+        wxStaticBoxSizer* subbox = new wxStaticBoxSizer(wxVERTICAL, this, boxtitle);
+        wxStaticText* stVersion = new wxStaticText(this, wxID_ANY, strVersion);
+        wxStaticText* stProfile = new wxStaticText(this, wxID_ANY, strProfile);
+        subbox->Add(stVersion, flags);
+        subbox->Add(stProfile, flags);
+
+        //  iteratr through each device on that platform
+        std::vector<cl::Device> devices;
+        platform.getDevices(CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, &devices);
+        for (auto device : devices)
+        {
+            wxString devName = device.getInfo<CL_DEVICE_NAME>();
+            wxString devType = (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
+            wxString devVendor = device.getInfo<CL_DEVICE_VENDOR>();
+            wxString devMaxMemAlloc;
+            wxString devMaxMemGlobal;
+            devMaxMemAlloc << " Max Mem Alloc: " << (device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() / 1024 / 1024) << " MB";
+            devMaxMemGlobal << "Max Global Alloc: " << device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() / 1024 / 1024 << " MB";
+            wxString devAvailable = (device.getInfo<CL_DEVICE_AVAILABLE>() == CL_TRUE) ? "Device is available" : "Device is NOT available";
+
+            wxStaticBoxSizer* devbox = new wxStaticBoxSizer(wxVERTICAL, this, devName);
+            wxStaticText* stType = new wxStaticText(this, wxID_ANY, devType);
+            wxStaticText* stVendor = new wxStaticText(this, wxID_ANY, devVendor);
+            wxStaticText* stMaxAlloc = new wxStaticText(this, wxID_ANY, devMaxMemAlloc);
+            wxStaticText* stMaxGlobal = new wxStaticText(this, wxID_ANY, devMaxMemGlobal);
+            wxStaticText* stAvailable = new wxStaticText(this, wxID_ANY, devAvailable);
+
+            devbox->Add(stType, flags);
+            devbox->Add(stVendor, flags);
+            devbox->Add(stMaxAlloc, flags);
+            devbox->Add(stMaxGlobal, flags);
+            devbox->Add(stAvailable, flags);
+            subbox->Add(devbox, flags);
+
+            CLDEVICE_CLIENTDATA* data = new CLDEVICE_CLIENTDATA;
+            data->device = device;
+
+            wxString selname = wxString::Format(wxT("%s (%s) %s"), devVendor, devType, devName);
+            runselector->Append(selname, data);
+        }
+
+        sizerDevices->Add(subbox), flags;
+    }
+
+    Fit();
 }
