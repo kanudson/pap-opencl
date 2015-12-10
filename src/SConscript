@@ -5,7 +5,7 @@ exe_sources = Glob("*.cpp")
 env = Environment()
 
 env.Append(CCFLAGS = ['-g', '--std=c++11', '-fdiagnostics-color=always'])
-env.Append(LIBS = 'OpenCL')
+env.Append(LIBS = ['OpenCL', 'pthread'])
 env.Program(exe_target, exe_sources)
 
 
