@@ -3,6 +3,7 @@ exe_target = "clse"
 exe_sources = Glob("*.cpp")
 
 env = Environment()
+env.ParseConfig('wx-config --cflags --libs')
 
 env.Append(CCFLAGS = ['-g', '--std=c++11', '-fdiagnostics-color=always'])
 env.Append(LIBS = ['OpenCL', 'pthread'])
