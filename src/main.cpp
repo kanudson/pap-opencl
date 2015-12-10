@@ -22,6 +22,7 @@ bool PapApp::OnInit()
     return true;
 }
 
+/*
 //////////////////////////////////////////////////////////////////////////
 //  'old' main, if you don't want to build with wxWidgets
 int main(int argc, char* argv[])
@@ -41,3 +42,5 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+// */
+
