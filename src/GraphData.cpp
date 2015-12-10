@@ -43,6 +43,16 @@ GraphData::GraphData(const GraphData & rhs)
 
 
 //////////////////////////////////////////////////////////////////////////
+GraphData::GraphData(const GraphData&& rhs)
+    :m_neighborsPerVertex(std::move(rhs.m_neighborsPerVertex))
+    ,m_vertices(std::move(rhs.m_vertices))
+    ,m_edges(std::move(rhs.m_edges))
+    ,m_weights(std::move(rhs.m_weights))
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 uint64_t GraphData::VertexCount() const
 {
     return m_vertices.size();

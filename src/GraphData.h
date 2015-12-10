@@ -15,8 +15,9 @@ public:
     //  Copies the graph data
     GraphData(const GraphData& rhs);
 
-    GraphData(const GraphData&& rhs) = delete;
+    GraphData(const GraphData&& rhs);
     GraphData& operator= (const GraphData& data) = delete;
+    GraphData& operator= (const GraphData&& data) = delete;
 
     uint64_t VertexCount()  const;
     uint64_t EdgeCount()    const;
