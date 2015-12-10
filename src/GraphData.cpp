@@ -16,8 +16,8 @@ namespace
 GraphData::GraphData(uint32_t vertexCount, uint32_t neighborsPerVertex, uint32_t seed)
     :m_neighborsPerVertex(neighborsPerVertex)
     ,m_vertices(vertexCount, 0)
-    ,m_edges(vertexCount * neighborsPerVertex, 0)
-    ,m_weights(vertexCount * neighborsPerVertex, 0)
+    ,m_edges(static_cast<uint64_t>(vertexCount) * static_cast<uint64_t>(neighborsPerVertex), 0)
+    ,m_weights(static_cast<uint64_t>(vertexCount) * static_cast<uint64_t>(neighborsPerVertex), 0)
 {
     //  TODO: test if the edges and weights vectors can be _fully_ addressed
     //  with unsigned 32-bit integers
@@ -173,7 +173,8 @@ void GraphData::Initialize(uint32_t seed)
             //  random generatore uses C++ Random Libs
             //  in this case, we use the mersenne twister engine
             //std::mt19937 rds;
-            std::mt19937 threadEngine(currentSeed);
+            //std::mt19937 threadEngine(currentSeed);
+            std::default_random_engine threadEngine(currentSeed);
             std::uniform_int_distribution<uint32_t> distrEdges(0, vertexCount);
             std::uniform_int_distribution<uint32_t> distrWeight(0, WEIGHT_LIMIT);
             const uint64_t edgeEnd = end * m_neighborsPerVertex;
