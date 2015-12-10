@@ -195,7 +195,7 @@ void PapWindow::RecalcMemorySize()
     wxString ecount = tcEdgePerVec->GetLineText(0);
     bool weighted   = chWeighted->IsChecked();
 
-    uint64_t vc, ec;
+    unsigned long long vc, ec;
     if (!vcount.ToULongLong(&vc) || !ecount.ToULongLong(&ec))
         return;
 
