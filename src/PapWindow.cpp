@@ -16,8 +16,6 @@ const char* DEFAULT_ENDVEC    = "10000";
 PapWindow::PapWindow()
     :wxFrame(nullptr, wxID_ANY, PAP_DIALOG_TITLE)
 {
-    timer = new wxTimer(this, PAPEV_TIMER);
-
     //  Create Group Box for Graph Configuration
     //  uses a Box Sizer with 2 columns
     auto* st = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Graph configuration"));
@@ -76,7 +74,6 @@ PapWindow::PapWindow()
     FindOpenCLDevices();
 
     //  Bind events
-    Bind(wxEVT_TIMER, &PapWindow::OnTimer, this);
     btnGenerate->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::GenerateGraph, this);
     tcVertexCount->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
     tcEdgePerVec->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
@@ -121,11 +118,6 @@ void PapWindow::GenerateGraph(wxCommandEvent & ev)
 void PapWindow::GenerateDone(wxCommandEvent & ev)
 {
     //  notification that all _is_ actually done
-    Done();
-}
-
-void PapWindow::OnTimer(wxTimerEvent & ev)
-{
     Done();
 }
 

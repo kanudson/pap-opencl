@@ -26,7 +26,6 @@ public:
     //  generate graph button pressed
     void GenerateGraph(wxCommandEvent& ev);
     void GenerateDone(wxCommandEvent& ev);
-    void OnTimer(wxTimerEvent& ev);
 
     //  called, when input in text boxes or the check box changed
     void GraphConfigChanged(wxCommandEvent& ev);
@@ -47,7 +46,6 @@ private:
     bool generating = false;
     wxGauge* progressBar = nullptr;
     wxStaticText* stChangedText = nullptr;
-    wxTimer* timer = nullptr;
 
     void DisableGraphInputs();
     void EnableGraphInputs();
