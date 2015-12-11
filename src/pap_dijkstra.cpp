@@ -55,7 +55,7 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  *
  * @brief   runs the breath first search on a given graph Uses the given OpenCL Context to run
  *          the algorithm.
- *          Uses a unweighted, one directional graph
+ *          Uses an unweighted, one directional graph
  *          The weightArray of the Graph is therefor not used at all, and instead
  *          the weight is incremented by 1 in each step.
  *
@@ -68,7 +68,7 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  * @param   endVertex       The end vertex of the route
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
-                           uint32_t startVertex, uint32_t endVertex)
+                           uint32_t startVertex, uint32_t endVertex, std::ostream& ss)
 {
     cl::CommandQueue queue(context);
 
@@ -83,7 +83,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
     catch (cl::Error err)
     {
-        std::cerr << prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
+        ss << prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
         throw;
     }
 
@@ -138,8 +138,8 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
     catch (cl::Error err)
     {
-        std::cerr << err.what() << std::endl;
-        std::cerr << err.err() << std::endl;
+        ss << err.what() << std::endl;
+        ss << err.err() << std::endl;
         throw;
     }
 
@@ -149,6 +149,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 
     //  run BFS until finish
     //  calculate more than one stage each loop to keep the GPU busy
+    ss << ">> GO\n";
     unsigned int i = 0;
     bool keepRunning = true;
     do 
@@ -162,10 +163,6 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         queue.finish();
         queue.enqueueNDRangeKernel(kernelStageTwo, cl::NullRange, cl::NDRange(bufVertexCount));
         queue.finish();
-        //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
-        //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
-        //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
-        //queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
 
         //  Map Frontier Buffer into host memory and check if it is empty
         //  If empty exit loop and print results, otherwise keep running
@@ -173,19 +170,20 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
-        std::cout << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
-        std::cout << "nachher " << frontSizeDanach << ", ";
-        std::cout << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
+        ss << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
+        ss << "nachher " << frontSizeDanach << ", ";
+        ss << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
         ++i;
         keepRunning = (frontSizeDanach == 0) ? false : true;
     } while (keepRunning);
+    ss << ">> FIN\n";
 
     auto ptrVisited = (cl_uint*)queue.enqueueMapBuffer(bufVisited, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
     auto visited = frontierSize(ptrVisited, bufVertexCount);
     queue.enqueueUnmapMemObject(bufVisited, ptrVisited);
 
-    std::cout << visited << " visited, thats % " << (float(visited) / bufVertexCount) * 100 << std::endl;
-    std::cout << "Loops needed: " << i << std::endl;
+    ss << visited << " visited, thats % " << (float(visited) / bufVertexCount) * 100 << std::endl;
+    ss << "Loops needed: " << i << std::endl;
     return;
 }
 
@@ -233,7 +231,7 @@ void runDijkstra(int argc, char* argv[])
 
         //  create a OpenCL context for that device
         cl::Context context(selectedDevice);
-        runBreadthFirstSearch(context, selectedDevice, graph, startVertex, endVertex);
+        runBreadthFirstSearch(context, selectedDevice, graph, startVertex, endVertex, cout);
     }
     catch (cl::Error& err)
     {
