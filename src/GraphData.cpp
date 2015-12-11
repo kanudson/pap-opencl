@@ -138,15 +138,6 @@ bool GraphData::Equals(const GraphData & other) const
     return true;
 }
 
-uint64_t GraphData::CalculateBytes() const
-{
-    uint64_t result;
-
-    result += m_vertices.size();
-
-    return result;
-}
-
 void GraphData::Initialize(uint32_t seed)
 {
     const std::size_t vertexCount = m_vertices.size();

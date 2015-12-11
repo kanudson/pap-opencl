@@ -30,7 +30,6 @@ public:
     const uint32_t* GetWeights()  const;
 
     bool Equals(const GraphData& other) const;
-    uint64_t CalculateBytes() const;
 
 private:
     void Initialize(uint32_t seed);
