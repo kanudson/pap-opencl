@@ -1,13 +1,18 @@
 #include "PapWindow.h"
 #include "cppcl.hpp"
+#include "pap_dijkstra.h"
 
 #include <future>
 
 namespace
 {
 const char* PAP_DIALOG_TITLE = "Wegfindung mit OpenCL";
+#ifdef _DEBUG
+const char* DEFAULT_VECCOUNT = "50000";
+#else
+const char* DEFAULT_VECCOUNT = "50000000";
+#endif
 
-const char* DEFAULT_VECCOUNT  = "50000000";
 const char* DEFAULT_EDGECOUNT = "8";
 const char* DEFAULT_STARTVEC  = "0";
 const char* DEFAULT_ENDVEC    = "10000";
@@ -49,7 +54,7 @@ PapWindow::PapWindow()
     progressBar = new wxGauge(this, wxID_ANY, 100);
     progressBar->Disable();
 
-    wxSizerFlags flags(1);
+    wxSizerFlags flags;
     flags.Center().Top().Expand().Border(wxALL, 2);
     gs->Add(text0, flags);
     gs->Add(tcSeed, flags);
@@ -92,9 +97,12 @@ PapWindow::PapWindow()
     hbox->Add(sizerDevices, flags);
     hbox->Add(sizerRuntime, flags);
 
+    wxSizerFlags flagse(1);
+    flagse.Center().Top().Expand().Border(wxALL, 2);
+
     auto* vbox = new wxBoxSizer(wxVERTICAL);
-    vbox->Add(hbox, flags);
-    vbox->Add(runlog, flags);
+    vbox->Add(hbox, flagse);
+    vbox->Add(runlog, flagse);
     SetBackgroundColour(*wxWHITE);
     SetSizerAndFit(vbox);
     Center();
@@ -134,8 +142,6 @@ void PapWindow::GenerateGraph(wxCommandEvent & ev)
     });
     std::thread thrd(std::move(tsk));
     thrd.detach();
-
-    //graphdata = new GraphData(vcount, ecount, seed);
 }
 
 void PapWindow::OnGraphCreated(wxCommandEvent & ev)
@@ -157,17 +163,24 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
     wxArrayInt selection;
     count = runselector->GetCheckedItems(selection);
 
+    //  clear textbox
+    runlog->Clear();
+
     for (int i = 0; i < count; ++i)
     {
         int id = selection.Item(i);
         CLDEVICE_CLIENTDATA* data = static_cast<CLDEVICE_CLIENTDATA*>(runselector->GetClientData(id));
 
-        //  TODO: actually run the pathfinding algorithm
         wxString devName = data->device.getInfo<CL_DEVICE_NAME>();
         wxString devType = (data->device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
         wxString devVendor = data->device.getInfo<CL_DEVICE_VENDOR>();
         wxString selname = wxString::Format(wxT("%s (%s) %s"), devVendor, devType, devName);
-        wxMessageBox(selname);
+
+        std::ostream ss(runlog);
+        ss << "running on " << selname << "\n";
+        cl::Context context(data->device);
+        runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss);
+        ss << "\n";
     }
 }
 
@@ -265,15 +278,15 @@ void PapWindow::FindOpenCLDevices()
 
             wxStaticBoxSizer* devbox = new wxStaticBoxSizer(wxVERTICAL, this, devName);
             wxStaticText* stType = new wxStaticText(this, wxID_ANY, devType);
-            wxStaticText* stVendor = new wxStaticText(this, wxID_ANY, devVendor);
-            wxStaticText* stMaxAlloc = new wxStaticText(this, wxID_ANY, devMaxMemAlloc);
-            wxStaticText* stMaxGlobal = new wxStaticText(this, wxID_ANY, devMaxMemGlobal);
+            //wxStaticText* stVendor = new wxStaticText(this, wxID_ANY, devVendor);
+            //wxStaticText* stMaxAlloc = new wxStaticText(this, wxID_ANY, devMaxMemAlloc);
+            //wxStaticText* stMaxGlobal = new wxStaticText(this, wxID_ANY, devMaxMemGlobal);
             wxStaticText* stAvailable = new wxStaticText(this, wxID_ANY, devAvailable);
 
             devbox->Add(stType, flags);
-            devbox->Add(stVendor, flags);
-            devbox->Add(stMaxAlloc, flags);
-            devbox->Add(stMaxGlobal, flags);
+            //devbox->Add(stVendor, flags);
+            //devbox->Add(stMaxAlloc, flags);
+            //devbox->Add(stMaxGlobal, flags);
             devbox->Add(stAvailable, flags);
             subbox->Add(devbox, flags);
 

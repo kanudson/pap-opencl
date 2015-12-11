@@ -14,6 +14,7 @@ enum
 };
 
 wxDECLARE_EVENT(GraphCreated, wxCommandEvent);
+wxDECLARE_EVENT(PathfindingDone, wxCommandEvent);
 
 struct CLDEVICE_CLIENTDATA
 {
