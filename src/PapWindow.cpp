@@ -18,6 +18,10 @@ wxDEFINE_EVENT(GraphCreated, wxCommandEvent);
 PapWindow::PapWindow()
     :wxFrame(nullptr, wxID_ANY, PAP_DIALOG_TITLE)
 {
+    runlog = new wxTextCtrl(this, wxID_ANY, wxT(""),
+                            wxDefaultPosition, wxDefaultSize,
+                            wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
+
     //  Create Group Box for Graph Configuration
     //  uses a Box Sizer with 2 columns
     auto* st = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Graph configuration"));
@@ -45,8 +49,8 @@ PapWindow::PapWindow()
     progressBar = new wxGauge(this, wxID_ANY, 100);
     progressBar->Disable();
 
-    wxSizerFlags flags(0);
-    flags.Center().Top().Expand().Border(wxALL, 5);
+    wxSizerFlags flags(1);
+    flags.Center().Top().Expand().Border(wxALL, 2);
     gs->Add(text0, flags);
     gs->Add(tcSeed, flags);
     gs->Add(text1, flags);
@@ -87,8 +91,12 @@ PapWindow::PapWindow()
     hbox->Add(st, flags);
     hbox->Add(sizerDevices, flags);
     hbox->Add(sizerRuntime, flags);
+
+    auto* vbox = new wxBoxSizer(wxVERTICAL);
+    vbox->Add(hbox, flags);
+    vbox->Add(runlog, flags);
     SetBackgroundColour(*wxWHITE);
-    SetSizerAndFit(hbox);
+    SetSizerAndFit(vbox);
     Center();
 }
 

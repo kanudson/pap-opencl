@@ -36,6 +36,7 @@ public:
 
 private:
     //  Input for graph config
+    wxTextCtrl* runlog         = nullptr;
     wxTextCtrl* tcSeed         = nullptr;
     wxTextCtrl* tcVertexCount  = nullptr;
     wxTextCtrl* tcEdgePerVec   = nullptr;
