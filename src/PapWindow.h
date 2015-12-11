@@ -13,6 +13,8 @@ enum
     PAPEV_TIMER
 };
 
+wxDECLARE_EVENT(GraphCreated, wxCommandEvent);
+
 struct CLDEVICE_CLIENTDATA
 {
     cl::Device device;
@@ -25,7 +27,7 @@ public:
 
     //  generate graph button pressed
     void GenerateGraph(wxCommandEvent& ev);
-    void GenerateDone(wxCommandEvent& ev);
+    void OnGraphCreated(wxCommandEvent& ev);
 
     //  called, when input in text boxes or the check box changed
     void GraphConfigChanged(wxCommandEvent& ev);

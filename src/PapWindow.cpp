@@ -1,7 +1,7 @@
 #include "PapWindow.h"
-
 #include "cppcl.hpp"
 
+#include <future>
 
 namespace
 {
@@ -12,6 +12,8 @@ const char* DEFAULT_EDGECOUNT = "8";
 const char* DEFAULT_STARTVEC  = "0";
 const char* DEFAULT_ENDVEC    = "10000";
 }
+
+wxDEFINE_EVENT(GraphCreated, wxCommandEvent);
 
 PapWindow::PapWindow()
     :wxFrame(nullptr, wxID_ANY, PAP_DIALOG_TITLE)
@@ -74,6 +76,7 @@ PapWindow::PapWindow()
     FindOpenCLDevices();
 
     //  Bind events
+    Bind(GraphCreated, &PapWindow::OnGraphCreated, this);
     btnGenerate->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::GenerateGraph, this);
     tcVertexCount->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
     tcEdgePerVec->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
@@ -111,11 +114,23 @@ void PapWindow::GenerateGraph(wxCommandEvent & ev)
     if (graphdata)
         delete graphdata;
 
-    graphdata = new GraphData(vcount, ecount, seed);
-    Done();
+    //  create graph data in an extra thread
+    //  gui stays responsive!
+    std::packaged_task<void()> tsk([&]()
+    {
+        //  TODO: put graphdata assignment in main thread
+        //  send the ptr with the event as clientdata?!
+        graphdata = new GraphData(vcount, ecount, seed);
+        auto* ev = new wxCommandEvent(GraphCreated);
+        QueueEvent(ev);
+    });
+    std::thread thrd(std::move(tsk));
+    thrd.detach();
+
+    //graphdata = new GraphData(vcount, ecount, seed);
 }
 
-void PapWindow::GenerateDone(wxCommandEvent & ev)
+void PapWindow::OnGraphCreated(wxCommandEvent & ev)
 {
     //  notification that all _is_ actually done
     Done();
