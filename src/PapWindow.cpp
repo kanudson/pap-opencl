@@ -6,7 +6,7 @@
 
 namespace
 {
-const char* PAP_DIALOG_TITLE = "Wegfindung mit OpenCL";
+const char* PAP_DIALOG_TITLE = "OpenCL stuff";
 #ifdef _DEBUG
 const char* DEFAULT_VECCOUNT = "50000";
 #else
@@ -135,7 +135,7 @@ void PapWindow::GenerateGraph(wxCommandEvent & ev)
     std::packaged_task<void()> tsk([&]()
     {
         //  TODO: put graphdata assignment in main thread
-        //  send the ptr with the event as clientdata?!
+        //  send the ptr with the event as client data?!
         graphdata = new GraphData(vcount, ecount, seed);
         auto* ev = new wxCommandEvent(GraphCreated);
         QueueEvent(ev);
@@ -163,9 +163,11 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
     wxArrayInt selection;
     count = runselector->GetCheckedItems(selection);
 
-    //  clear textbox
+    //  clear text box
     runlog->Clear();
 
+    //  TODO: run on a separate thread?
+    //  needs message passing to fill the output log :(
     for (int i = 0; i < count; ++i)
     {
         int id = selection.Item(i);
