@@ -97,7 +97,7 @@ PapWindow::PapWindow()
     hbox->Add(sizerDevices, flags);
     hbox->Add(sizerRuntime, flags);
 
-    wxSizerFlags flagse(1);
+    wxSizerFlags flagse(10);
     flagse.Center().Top().Expand().Border(wxALL, 2);
 
     auto* vbox = new wxBoxSizer(wxVERTICAL);
