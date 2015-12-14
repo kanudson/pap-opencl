@@ -21,25 +21,3 @@ bool PapApp::OnInit()
     frame->Show();
     return true;
 }
-
-/*
-//////////////////////////////////////////////////////////////////////////
-//  'old' main, if you don't want to build with wxWidgets
-int main(int argc, char* argv[])
-{
-    try
-    {
-        runDijkstra(argc, argv);
-    }
-    catch (const char* msg)
-    {
-        std::cerr << msg << std::endl;
-    }
-    catch (...)
-    {
-        std::cerr << "Unknown Error, this is really bad" << std::endl;
-    }
-
-    return 0;
-}
-// */
