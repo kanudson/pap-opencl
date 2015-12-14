@@ -39,6 +39,5 @@ void runBreadthFirstSearch(cl::Context& context,
                            uint32_t startVertex,
                            uint32_t endVertex,
                            std::ostream& ss);
-void runDijkstra(int argc, char* argv[]);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
