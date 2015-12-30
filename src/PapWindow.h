@@ -25,6 +25,7 @@ class PapWindow : public wxFrame
 {
 public:
     PapWindow();
+    PapWindow(uint64_t vertex, uint64_t edges, uint64_t seed);
 
     //  generate graph button pressed
     void GenerateGraph(wxCommandEvent& ev);
