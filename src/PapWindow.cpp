@@ -108,6 +108,19 @@ PapWindow::PapWindow()
     Center();
 }
 
+PapWindow::PapWindow(uint64_t vertex, uint64_t edges, uint64_t seed)
+    :PapWindow()
+{
+    wxString sv, se, ss;
+    sv << vertex;
+    se << edges;
+    ss << seed;
+
+    tcVertexCount->SetLabel(sv);
+    tcEdgePerVec->SetLabel(se);
+    tcSeed->SetLabel(ss);
+}
+
 void PapWindow::GenerateGraph(wxCommandEvent & ev)
 {
     generating = true;
