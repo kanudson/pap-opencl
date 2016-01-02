@@ -11,11 +11,16 @@
 class PapApp : public wxApp
 {
 public:
-    virtual bool OnInit();
-    virtual void OnInitCmdLine(wxCmdLineParser& parser);
-    virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+    virtual bool OnInit() override;
+    virtual int OnRun() override;
+
+    virtual void OnInitCmdLine(wxCmdLineParser& parser) override;
+    virtual bool OnCmdLineParsed(wxCmdLineParser& parser) override;
 
 private:
+    void RunGui();
+    void RunConsole();
+
     long countVertecies = 0;
     long countEdges = 0;
     long countSeed = 0;
@@ -32,9 +37,32 @@ bool PapApp::OnInit()
     if (!wxApp::OnInit())
         return false;
 
+    return true;
+}
+
+int PapApp::OnRun()
+{
+    if (noGui)
+    {
+        RunConsole();
+        return 0;
+    }
+
+    int res = 0;
+    RunGui();
+    res = wxApp::OnRun();
+    return res;
+}
+
+void PapApp::RunGui()
+{
     PapWindow* frame = new PapWindow();
     frame->Show();
-    return true;
+}
+
+void PapApp::RunConsole()
+{
+    std::cout << "running without gui!" << std::endl;
 }
 
 void PapApp::OnInitCmdLine(wxCmdLineParser & parser)
