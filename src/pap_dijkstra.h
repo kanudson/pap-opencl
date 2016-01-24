@@ -39,6 +39,7 @@ void runBreadthFirstSearch(cl::Context& context,
                            uint32_t startVertex,
                            uint32_t endVertex,
                            std::ostream& ss,
-                           const uint16_t iterationsPerLoop = 1);
+                           const uint16_t iterationsPerLoop = 1,
+                           const uint16_t workgroupSize = 32);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */

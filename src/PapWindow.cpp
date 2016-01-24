@@ -36,6 +36,7 @@ PapWindow::PapWindow()
     tcEdgePerVec  = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_EDGECOUNT));
     tcStartVertex = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_STARTVEC));
     tcEndVertex   = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_ENDVEC));
+    tcWorkgroupSize = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8("32"));
     chWeighted    = new wxCheckBox(this, wxID_ANY, wxT("create a weighted graph"));
     wxStaticText* text0 = new wxStaticText(this, wxID_ANY, wxT("seed"));
     wxStaticText* text1 = new wxStaticText(this, wxID_ANY, wxT("vertex count"));
@@ -75,13 +76,14 @@ PapWindow::PapWindow()
     st->Add(stChangedText, flags);
 
     RecalcMemorySize();
-    sizerDevices = new wxStaticBoxSizer(wxVERTICAL, this, wxT("OpenCL Platforms"));
-    sizerRuntime = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Run stuff"));
+    sizerDevices = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Supported OpenCL Platforms"));
+    sizerRuntime = new wxStaticBoxSizer(wxVERTICAL, this, wxT("runtime configuration"));
     runselector = new wxCheckListBox(this, wxID_ANY);
     runbutton = new wxButton(this, wxID_ANY, "run on selected devices");
     runbutton->Disable();
     sizerRuntime->Add(runselector, flags);
     sizerRuntime->Add(runbutton, flags);
+    sizerRuntime->Add(tcWorkgroupSize, flags);
     FindOpenCLDevices();
 
     //  Bind events
@@ -176,6 +178,9 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
     wxArrayInt selection;
     count = runselector->GetCheckedItems(selection);
 
+    //  workgroup size
+    uint16_t workgroupSize = getWorkgroupsize();
+
     //  clear text box
     runlog->Clear();
 
@@ -194,7 +199,7 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
         std::ostream ss(runlog);
         ss << "running on " << selname << "\n";
         cl::Context context(data->device);
-        runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss);
+        runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss, 1, workgroupSize);
         ss << "\n";
     }
 }
@@ -227,6 +232,16 @@ void PapWindow::Done()
     generating = false;
     EnableGraphInputs();
     runbutton->Enable();
+}
+
+uint16_t PapWindow::getWorkgroupsize()
+{
+    wxString strsize = tcWorkgroupSize->GetLineText(0);
+
+    unsigned long workgroupSize;
+    strsize.ToULong(&workgroupSize);
+
+    return static_cast<uint16_t>(workgroupSize);
 }
 
 void PapWindow::RecalcMemorySize()

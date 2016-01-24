@@ -69,7 +69,8 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
                            uint32_t startVertex, uint32_t endVertex, std::ostream& ss,
-                           const uint16_t iterationsPerLoop /* = 1 */)
+                           const uint16_t iterationsPerLoop /* = 1 */,
+                           const uint16_t workgroupSize /* = 32 */)
 {
     cl::CommandQueue queue(context);
 
@@ -146,8 +147,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
 
     //  initialize buffers on the GPU
-    size_t optimalGroupSize = 1;
-    queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount), cl::NDRange(optimalGroupSize), nullptr);
+    queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount), cl::NDRange(workgroupSize), nullptr);
     queue.finish();
 
     //  run BFS until finish

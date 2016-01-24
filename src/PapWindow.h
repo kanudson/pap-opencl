@@ -44,6 +44,7 @@ private:
     wxTextCtrl* tcEdgePerVec   = nullptr;
     wxTextCtrl* tcStartVertex  = nullptr;
     wxTextCtrl* tcEndVertex    = nullptr;
+    wxTextCtrl* tcWorkgroupSize= nullptr;
     wxCheckBox* chWeighted     = nullptr;
     wxButton*   btnGenerate    = nullptr;
     wxStaticText* stMemorySize = nullptr;
@@ -55,6 +56,9 @@ private:
     void DisableGraphInputs();
     void EnableGraphInputs();
     void Done();
+
+    //  function to parse a text controll to an integer
+    uint16_t getWorkgroupsize();
 
     void RecalcMemorySize();
     void FindOpenCLDevices();
