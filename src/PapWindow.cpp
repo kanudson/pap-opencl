@@ -199,7 +199,16 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
         std::ostream ss(runlog);
         ss << "running on " << selname << "\n";
         cl::Context context(data->device);
-        runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss, 1, workgroupSize);
+        try
+        {
+            runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss, 1, workgroupSize);
+        }
+        catch (cl::Error err)
+        {
+            ss << err.what() << std::endl;
+            ss << err.err() << std::endl;
+            ss << "stoping execution on " << devName << std::endl;
+        }
         ss << "\n";
     }
 }

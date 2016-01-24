@@ -10,7 +10,6 @@ enum
 {
     BTN_GENERATE_GRAPH = wxID_HIGHEST,
     PAPEV_GENERATE_GRAPH_DONE,
-    PAPEV_TIMER
 };
 
 wxDECLARE_EVENT(GraphCreated, wxCommandEvent);
