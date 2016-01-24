@@ -38,6 +38,7 @@ void runBreadthFirstSearch(cl::Context& context,
                            GraphData& data,
                            uint32_t startVertex,
                            uint32_t endVertex,
-                           std::ostream& ss);
+                           std::ostream& ss,
+                           const uint16_t iterationsPerLoop = 1);
 
 #endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
