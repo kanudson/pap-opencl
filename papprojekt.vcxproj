@@ -71,12 +71,12 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Libs\wxWidgets-3.0.2\include\msvc;E:\Libs\wxWidgets-3.0.2\include;E:\Cuda\toolkit\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Cuda\toolkit\lib\x64;E:\Libs\wxWidgets-3.0.2\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Libs\wxWidgets-3.0.2\include\msvc;E:\Libs\wxWidgets-3.0.2\include;E:\Cuda\toolkit\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Cuda\toolkit\lib\x64;E:\Libs\wxWidgets-3.0.2\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
