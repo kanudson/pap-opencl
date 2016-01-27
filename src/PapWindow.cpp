@@ -3,6 +3,7 @@
 #include "pap_dijkstra.h"
 
 #include <future>
+#include <chrono>
 
 namespace
 {
@@ -36,6 +37,7 @@ PapWindow::PapWindow()
     tcEdgePerVec  = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_EDGECOUNT));
     tcStartVertex = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_STARTVEC));
     tcEndVertex   = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_ENDVEC));
+    tcInnerLoops = new wxTextCtrl(this, wxID_ANY, wxT("1"));
     chWeighted    = new wxCheckBox(this, wxID_ANY, wxT("create a weighted graph"));
     wxStaticText* text0 = new wxStaticText(this, wxID_ANY, wxT("seed"));
     wxStaticText* text1 = new wxStaticText(this, wxID_ANY, wxT("vertex count"));
@@ -43,6 +45,7 @@ PapWindow::PapWindow()
     wxStaticText* text3 = new wxStaticText(this, wxID_ANY, wxT("start vertex"));
     wxStaticText* text4 = new wxStaticText(this, wxID_ANY, wxT("end vertex"));
     wxStaticText* text5 = new wxStaticText(this, wxID_ANY, wxT(" "));
+    wxStaticText* text6 = new wxStaticText(this, wxID_ANY, wxT("inner loops for search"));
     btnGenerate = new wxButton(this, BTN_GENERATE_GRAPH, wxT("Generate Graph"));
     stMemorySize = new wxStaticText(this, wxID_ANY, wxT(""),
                                     wxDefaultPosition, wxDefaultSize,
@@ -77,9 +80,13 @@ PapWindow::PapWindow()
     RecalcMemorySize();
     sizerDevices = new wxStaticBoxSizer(wxVERTICAL, this, wxT("OpenCL Platforms"));
     sizerRuntime = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Run stuff"));
+    auto sizerLoops = new wxStaticBoxSizer(wxHORIZONTAL, this, wxT("inner loops for search"));
     runselector = new wxCheckListBox(this, wxID_ANY);
     runbutton = new wxButton(this, wxID_ANY, "run on selected devices");
     runbutton->Disable();
+    sizerLoops->Add(text6, flags);
+    sizerLoops->Add(tcInnerLoops, flags);
+    sizerRuntime->Add(sizerLoops, flags);
     sizerRuntime->Add(runselector, flags);
     sizerRuntime->Add(runbutton, flags);
     FindOpenCLDevices();
@@ -179,6 +186,11 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
     //  clear text box
     runlog->Clear();
 
+    unsigned long uloops = 0;
+    wxString innerLoops = tcInnerLoops->GetLineText(0);
+    innerLoops.ToULong(&uloops);
+
+
     //  TODO: run on a separate thread?
     //  needs message passing to fill the output log :(
     for (int i = 0; i < count; ++i)
@@ -192,18 +204,28 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
         wxString selname = wxString::Format(wxT("%s (%s) %s"), devVendor, devType, devName);
 
         std::ostream ss(runlog);
-        ss << "running on " << selname << "\n";
+        ss << "running on " << selname << " (" << uloops << " inner loops)\n";
         cl::Context context(data->device);
 
         try
         {
-            runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss);
+            auto before = std::chrono::high_resolution_clock::now();
+
+            runBreadthFirstSearch(context, data->device, *graphdata, 0, 100, ss, uloops);
+
+            auto after = std::chrono::high_resolution_clock::now();
+            auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+            ss << "Overall time: " << dur.count() << "ms" << std::endl;
         }
         catch (cl::Error err)
         {
             ss << err.what() << std::endl;
             ss << err.err() << std::endl;
             ss << "stoping execution on " << devName << std::endl;
+        }
+        catch (...)
+        {
+            ss << "Whoupdeefuckingdoo mein failer" << std::endl;
         }
         ss << "\n";
     }

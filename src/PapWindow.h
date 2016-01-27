@@ -43,6 +43,7 @@ private:
     wxTextCtrl* tcEdgePerVec   = nullptr;
     wxTextCtrl* tcStartVertex  = nullptr;
     wxTextCtrl* tcEndVertex    = nullptr;
+    wxTextCtrl* tcInnerLoops   = nullptr;
     wxCheckBox* chWeighted     = nullptr;
     wxButton*   btnGenerate    = nullptr;
     wxStaticText* stMemorySize = nullptr;

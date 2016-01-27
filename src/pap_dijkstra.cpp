@@ -68,7 +68,8 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  * @param   endVertex       The end vertex of the route
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
-                           uint32_t startVertex, uint32_t endVertex, std::ostream& ss)
+                           uint32_t startVertex, uint32_t endVertex, std::ostream& ss,
+                           const uint16_t innerLoops /* = 1 */)
 {
     cl::CommandQueue queue(context);
 
@@ -151,6 +152,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     //  calculate more than one stage each loop to keep the GPU busy
     ss << ">> GO\n";
     unsigned int i = 0;
+    uint16_t innerloop;
     bool keepRunning = true;
     do 
     {
@@ -159,10 +161,13 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
         queue.finish();
 
-        queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
-        queue.finish();
-        queue.enqueueNDRangeKernel(kernelStageTwo, cl::NullRange, cl::NDRange(bufVertexCount));
-        queue.finish();
+        for (innerloop = 0; innerloop < innerLoops; ++innerloop)
+        {
+            queue.enqueueNDRangeKernel(kernelStageOne, cl::NullRange, cl::NDRange(bufVertexCount));
+            queue.finish();
+            queue.enqueueNDRangeKernel(kernelStageTwo, cl::NullRange, cl::NDRange(bufVertexCount));
+            queue.finish();
+        }
 
         //  Map Frontier Buffer into host memory and check if it is empty
         //  If empty exit loop and print results, otherwise keep running
@@ -170,7 +175,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
-        ss << "Iteration #" << i << "; Vorher: " << frontSizeVorher << ", ";
+        ss << "Iteration #" << i * innerloop << "; Vorher: " << frontSizeVorher << ", ";
         ss << "nachher " << frontSizeDanach << ", ";
         ss << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
         ++i;
