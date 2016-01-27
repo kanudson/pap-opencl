@@ -71,7 +71,7 @@ kernel void bfs_init(global uint* frontierArray, global uint* visitedArray,
 {
     uint tid = get_global_id(0);
 
-    if (tid > vertexCount)
+    if (tid >= vertexCount)
         return;
 
     if (sourceVertex == tid)

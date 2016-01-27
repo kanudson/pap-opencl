@@ -69,7 +69,8 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
                            uint32_t startVertex, uint32_t endVertex, std::ostream& ss,
-                           const uint16_t innerLoops /* = 1 */)
+                           const uint16_t innerLoops /* = 1 */,
+                           const uint16_t workgroupSize /* = 32 */)
 {
     cl::CommandQueue queue(context);
 
@@ -109,6 +110,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     cl::Kernel kernelStageOne(prog, "bfs_stage");
     cl::Kernel kernelStageTwo(prog, "bfs_sync");
 
+    //  set kernel parameters
     try {
         kernelInit.setArg(0, bufFrontier);
         kernelInit.setArg(1, bufVisited);
@@ -145,7 +147,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     }
 
     //  initialize buffers on the GPU
-    queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount));
+    queue.enqueueNDRangeKernel(kernelInit, cl::NullRange, cl::NDRange(bufVertexCount), cl::NDRange(workgroupSize), nullptr);
     queue.finish();
 
     //  run BFS until finish
@@ -153,7 +155,9 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     ss << ">> GO\n";
     unsigned int i = 0;
     uint16_t innerloop;
+    uint16_t outerLoopCounter = 0;
     bool keepRunning = true;
+    uint16_t innerLoopCounter;
     do 
     {
         auto ptrFrontier = (cl_uint*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
@@ -178,7 +182,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         ss << "Iteration #" << i * innerloop << "; Vorher: " << frontSizeVorher << ", ";
         ss << "nachher " << frontSizeDanach << ", ";
         ss << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
-        ++i;
+        ++outerLoopCounter;
         keepRunning = (frontSizeDanach == 0) ? false : true;
     } while (keepRunning);
     ss << ">> FIN\n";
@@ -188,6 +192,6 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     queue.enqueueUnmapMemObject(bufVisited, ptrVisited);
 
     ss << visited << " visited, thats % " << (float(visited) / bufVertexCount) * 100 << std::endl;
-    ss << "Loops needed: " << i << std::endl;
+    ss << "Loops needed: " << outerLoopCounter << ", " << innerLoops << " iterations per loop" << std::endl;
     return;
 }
