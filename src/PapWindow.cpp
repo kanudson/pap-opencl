@@ -84,13 +84,16 @@ PapWindow::PapWindow()
     auto sizerLoops = new wxStaticBoxSizer(wxHORIZONTAL, this, wxT("inner loops for search"));
     runselector = new wxCheckListBox(this, wxID_ANY);
     runbutton = new wxButton(this, wxID_ANY, "run on selected devices");
+    runbuttonCpu = new wxButton(this, wxID_ANY, "run on CPU (single threading)");
     runbutton->Disable();
+    runbuttonCpu->Disable();
     sizerLoops->Add(text6, flags);
     sizerLoops->Add(tcInnerLoops, flags);
     sizerRuntime->Add(sizerLoops, flags);
     sizerRuntime->Add(runselector, flags);
     sizerRuntime->Add(runbutton, flags);
     sizerRuntime->Add(tcWorkgroupSize, flags);
+    sizerRuntime->Add(runbuttonCpu, flags);
     FindOpenCLDevices();
 
     //  Bind events
@@ -100,6 +103,7 @@ PapWindow::PapWindow()
     tcEdgePerVec->Bind(wxEVT_TEXT, &PapWindow::GraphConfigChanged, this);
     chWeighted->Bind(wxEVT_CHECKBOX, &PapWindow::GraphConfigChanged, this);
     runbutton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::RunPathfinding, this);
+    runbuttonCpu->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PapWindow::RunPathfindingCpu, this);
 
     auto* hbox = new wxBoxSizer(wxHORIZONTAL);
     hbox->Add(st, flags);
@@ -235,6 +239,29 @@ void PapWindow::RunPathfinding(wxCommandEvent & ev)
     }
 }
 
+void PapWindow::RunPathfindingCpu(wxCommandEvent & ev)
+{
+    std::ostream ss(runlog);
+    ss << "running on CPU with one thread, gui can freeze\n";
+
+    try
+    {
+        auto before = std::chrono::high_resolution_clock::now();
+
+        runBfsCpu(*graphdata, 0, ss);
+
+        auto after = std::chrono::high_resolution_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+        ss << "Overall time: " << dur.count() << "ms" << std::endl;
+    }
+    catch (...)
+    {
+        ss << "Whoupdeefuckingdoo mein failer" << std::endl;
+    }
+    ss << "\n";
+
+}
+
 void PapWindow::DisableGraphInputs()
 {
     tcSeed->Disable();
@@ -263,6 +290,7 @@ void PapWindow::Done()
     generating = false;
     EnableGraphInputs();
     runbutton->Enable();
+    runbuttonCpu->Enable();
 }
 
 uint16_t PapWindow::getWorkgroupsize()
