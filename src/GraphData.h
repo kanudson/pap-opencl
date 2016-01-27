@@ -2,9 +2,8 @@
 #define GraphData_h__
 
 
-#include <vector>
 #include <random>
-
+#include <vector>
 
 class GraphData
 {
@@ -24,10 +23,8 @@ public:
 
     uint32_t* GetVertices();
     uint32_t* GetEdges();
-    uint32_t* GetWeights();
     const uint32_t* GetVertices() const;
     const uint32_t* GetEdges()    const;
-    const uint32_t* GetWeights()  const;
 
     bool Equals(const GraphData& other) const;
 
@@ -37,7 +34,6 @@ private:
     const int m_neighborsPerVertex;
     std::vector<uint32_t> m_vertices;
     std::vector<uint32_t> m_edges;
-    std::vector<uint32_t> m_weights;
 };
 
 
