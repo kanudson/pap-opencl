@@ -157,7 +157,6 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     uint16_t innerloop;
     uint16_t outerLoopCounter = 0;
     bool keepRunning = true;
-    uint16_t innerLoopCounter;
     do 
     {
         auto ptrFrontier = (cl_uint*)queue.enqueueMapBuffer(bufFrontier, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint) * bufVertexCount);
