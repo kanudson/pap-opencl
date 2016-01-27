@@ -11,7 +11,7 @@ const char* PAP_DIALOG_TITLE = "OpenCL stuff";
 #ifdef _DEBUG
 const char* DEFAULT_VECCOUNT = "50000";
 #else
-const char* DEFAULT_VECCOUNT = "50000000";
+const char* DEFAULT_VECCOUNT = "35000000";
 #endif
 
 const char* DEFAULT_EDGECOUNT = "8";
