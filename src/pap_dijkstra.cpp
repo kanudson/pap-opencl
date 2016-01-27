@@ -153,7 +153,6 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
     //  run BFS until finish
     //  calculate more than one stage each loop to keep the GPU busy
     ss << ">> GO\n";
-    unsigned int i = 0;
     uint16_t innerloop;
     uint16_t outerLoopCounter = 0;
     bool keepRunning = true;
@@ -178,7 +177,7 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
         auto frontSizeDanach = frontierSize(ptrFrontier, bufVertexCount);
         queue.enqueueUnmapMemObject(bufFrontier, ptrFrontier);
 
-        ss << "Iteration #" << i * innerloop << "; Vorher: " << frontSizeVorher << ", ";
+        ss << "Iteration #" << outerLoopCounter * innerLoops << "; Vorher: " << frontSizeVorher << ", ";
         ss << "nachher " << frontSizeDanach << ", ";
         ss << static_cast<float>(frontSizeDanach) / frontSizeVorher << std::endl;
         ++outerLoopCounter;
