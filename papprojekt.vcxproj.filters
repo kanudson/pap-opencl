@@ -18,12 +18,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pap_dijkstra.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\pap_helpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\GraphData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -33,18 +27,24 @@
     <ClCompile Include="src\pap_bfsCpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\pap_bfs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pap_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cppcl.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\pap_dijkstra.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\GraphData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PapWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pap_bfs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

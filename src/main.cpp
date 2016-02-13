@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-#include "pap_dijkstra.h"
+#include "pap_bfs.h"
 
 #include <wx/wx.h>
 #include <wx/cmdline.h>

@@ -1,6 +1,6 @@
 #include "PapWindow.h"
 #include "cppcl.hpp"
-#include "pap_dijkstra.h"
+#include "pap_bfs.h"
 
 #include <future>
 #include <chrono>

@@ -134,14 +134,14 @@
     <ClCompile Include="src\PapWindow.cpp" />
     <ClCompile Include="src\GraphData.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\pap_dijkstra.cpp" />
+    <ClCompile Include="src\pap_bfs.cpp" />
     <ClCompile Include="src\pap_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\PapWindow.h" />
     <ClInclude Include="src\cppcl.hpp" />
     <ClInclude Include="src\GraphData.h" />
-    <ClInclude Include="src\pap_dijkstra.h" />
+    <ClInclude Include="src\pap_bfs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kernels\bfs.cl" />

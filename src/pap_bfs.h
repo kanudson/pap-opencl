@@ -1,7 +1,7 @@
 /*
 * =====================================================================================
 *
-*       Filename:  pap_dijkstra.hpp
+*       Filename:  pap_bfs.hpp
 *
 *    Description:
 *
@@ -17,16 +17,14 @@
 */
 
 
-#ifndef  PAP_DIJKSTRA_H
-#define  PAP_DIJKSTRA_H
+#ifndef  PAP_BFS_H
+#define  PAP_BFS_H
 
 #include "cppcl.hpp"
 #include "GraphData.h"
 
 
 //  helpers
-int selectClPlatform(std::vector<cl::Platform> platforms);
-cl::Device selectClDevice(cl::Platform& platform);
 std::string loadFileContent(std::string filename);
 
 bool frontierEmpty(const cl_int* frontier, int vertexCount);
@@ -44,4 +42,4 @@ void runBreadthFirstSearch(cl::Context& context,
 
 void runBfsCpu(GraphData& graph, uint32_t startVertex, std::ostream& ss);
 
-#endif   /* ----- #ifndef PAP_DIJKSTRA_H  ----- */
+#endif   /* ----- #ifndef PAP_BFS_H  ----- */
