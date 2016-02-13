@@ -37,7 +37,7 @@ PapWindow::PapWindow()
     tcEdgePerVec  = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_EDGECOUNT));
     tcStartVertex = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_STARTVEC));
     tcEndVertex   = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8(DEFAULT_ENDVEC));
-    tcInnerLoops = new wxTextCtrl(this, wxID_ANY, wxT("1"));
+    tcInnerLoops = new wxTextCtrl(this, wxID_ANY, wxT("4"));
     tcWorkgroupSize = new wxTextCtrl(this, wxID_ANY, wxString::FromUTF8("32"));
     chWeighted    = new wxCheckBox(this, wxID_ANY, wxT("create a weighted graph"));
     wxStaticText* text0 = new wxStaticText(this, wxID_ANY, wxT("seed"));
