@@ -18,8 +18,8 @@ kernel void bfs_stage(global read_only uint* vertexArray, global read_only uint*
     if (doStuff != 0)
     {
         //  remove vertex from frontier
-        frontierArray[tid] = 0;
-        visitedArray[tid]  = 1;
+        frontierArray[tid] = 2;
+        //visitedArray[tid]  = 1;
 
         __private uint edgeStart = vertexArray[tid];
         __private uint edgeEnd;
@@ -58,8 +58,21 @@ kernel void bfs_sync(global read_only uint* vertexArray, global read_only uint* 
 
     if (toVisitNext[tid] != 0)
     {
-        frontierArray[tid] = 1;
+        if (frontierArray[tid] != 2)
+        {
+            frontierArray[tid] = 1;
+        }
+        else
+        {
+            frontierArray[tid] = 0;
+        }
         toVisitNext[tid] = 0;
+    }
+
+    if (frontierArray[tid] == 2)
+    {
+        frontierArray[tid] = 0;
+        visitedArray[tid] = 1;
     }
 }
 
