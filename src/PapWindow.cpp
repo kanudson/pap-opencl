@@ -84,7 +84,7 @@ PapWindow::PapWindow()
     auto sizerLoops = new wxStaticBoxSizer(wxHORIZONTAL, this, wxT("inner loops for search"));
     runselector = new wxCheckListBox(this, wxID_ANY);
     runbutton = new wxButton(this, wxID_ANY, "run on selected devices");
-    runbuttonCpu = new wxButton(this, wxID_ANY, "run on CPU (single threading)");
+    runbuttonCpu = new wxButton(this, wxID_ANY, "run on CPU (single thread)");
     runbutton->Disable();
     runbuttonCpu->Disable();
     sizerLoops->Add(text6, flags);
