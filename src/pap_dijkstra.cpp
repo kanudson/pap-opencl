@@ -26,6 +26,10 @@
 
 using namespace std;
 
+//  sicherstellen, dass cl_uint und uint32 die gleiche groese haben
+//  da beide Typen im Code fuer die gleichen Daten genutzt werden
+static_assert(sizeof(cl_uint) == sizeof(uint32_t), "OpenCL UInt has different size than uint32_t");
+
 
 bool frontierEmpty(const cl_uint* frontier, uint64_t vertexCount)
 {
