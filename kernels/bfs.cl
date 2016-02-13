@@ -15,11 +15,10 @@ kernel void bfs_stage(global read_only uint* vertexArray, global read_only uint*
 
     //  only process the vertex when it's in the frontier
     private uint doStuff = frontierArray[tid];
-    if (doStuff != 0)
+    if (doStuff == 1)
     {
         //  remove vertex from frontier
         frontierArray[tid] = 2;
-        //visitedArray[tid]  = 1;
 
         __private uint edgeStart = vertexArray[tid];
         __private uint edgeEnd;
@@ -32,13 +31,10 @@ kernel void bfs_stage(global read_only uint* vertexArray, global read_only uint*
         {
             //  check if vertex behin edge was visited
             __private uint nextVertexId = edgeArray[edge];
-            __private uint currentCosts = costArray[tid];
 
             if (visitedArray[nextVertexId] == 0)
             {
-                costArray[nextVertexId] = currentCosts + 1;
                 toVisitNext[nextVertexId] = 1;
-                //previousVertexArray[nextVertexId] = tid;
             }
         }
     }
@@ -92,16 +88,12 @@ kernel void bfs_init(global uint* frontierArray, global uint* visitedArray,
     if (sourceVertex == tid)
     {
         frontierArray[tid] = 1;
-        costArray[tid] = 0;
         visitedArray[tid] = 0;
-        //previousVertexArray[tid] = tid;
     }
     else
     {
         frontierArray[tid] = 0;
-        costArray[tid] = 0;
         visitedArray[tid] = 0;
-        //previousVertexArray[tid] = tid;
     }
 }
 
