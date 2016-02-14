@@ -386,7 +386,7 @@ void PapWindow::FindOpenCLDevices()
             runselector->Append(selname, data);
         }
 
-        sizerDevices->Add(subbox), flags;
+        sizerDevices->Add(subbox, flags);
     }
 
     Fit();
