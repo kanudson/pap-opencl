@@ -61,15 +61,11 @@ int frontierSize(const cl_uint* frontier, uint64_t vertexCount)
  *          the algorithm.
  *          Uses an unweighted, one directional graph
  *          The weightArray of the Graph is therefor not used at all, and instead
- *          the weight is incremented by 1 in each step.
+ *          the weight is incremented by 1 for each step.
  *
  * @author  Paul Thieme
  * @date    10/17/2015
  *
- * @param [in]  context     The OpenCL Context.
- * @param [in]  data        The GraphData structure to run on.
- * @param   startVertex     The Vertex in the Graph to start from.
- * @param   endVertex       The end vertex of the route
  */
 void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& graph,
                            uint32_t startVertex, uint32_t endVertex, std::ostream& ss,

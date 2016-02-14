@@ -40,6 +40,4 @@ void runBreadthFirstSearch(cl::Context& context,
                            const uint16_t innerLoops = 1,
                            const uint16_t workgroupSize = 32);
 
-void runBfsCpu(GraphData& graph, uint32_t startVertex, std::ostream& ss);
-
 #endif   /* ----- #ifndef PAP_BFS_H  ----- */

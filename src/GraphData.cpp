@@ -138,6 +138,8 @@ void InitializeGraphChunk(uint32_t* vertecies, uint32_t* edges, const uint32_t o
     }
 }
 
+//  TODO: probably crashing the Linux build
+//        random generator not capable of multiple threads?
 void GraphData::Initialize(uint32_t seed)
 {
     const std::size_t vertexCount = m_vertices.size();

@@ -34,7 +34,6 @@ public:
     void GraphConfigChanged(wxCommandEvent& ev);
 
     void RunPathfinding(wxCommandEvent& ev);
-    void RunPathfindingCpu(wxCommandEvent& ev);
 
 private:
     //  Input for graph config
@@ -68,7 +67,6 @@ private:
     wxStaticBoxSizer* sizerRuntime = nullptr;
     wxCheckListBox* runselector = nullptr;
     wxButton* runbutton = nullptr;
-    wxButton* runbuttonCpu = nullptr;
 
     GraphData* graphdata = nullptr;
 };
