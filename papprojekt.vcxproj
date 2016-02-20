@@ -130,7 +130,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\pap_bfsCpu.cpp" />
     <ClCompile Include="src\PapWindow.cpp" />
     <ClCompile Include="src\GraphData.cpp" />
     <ClCompile Include="src\main.cpp" />

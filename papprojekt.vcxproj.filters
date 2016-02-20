@@ -24,9 +24,6 @@
     <ClCompile Include="src\PapWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pap_bfsCpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\pap_bfs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

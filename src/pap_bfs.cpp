@@ -37,7 +37,10 @@ bool frontierEmpty(const cl_uint* frontier, uint64_t vertexCount)
     for (int i = 0; running && i < vertexCount; ++i)
     {
         if (frontier[i])
+        {
             running = false;
+            break;
+        }
     }
     return running;
 }
@@ -191,5 +194,9 @@ void runBreadthFirstSearch(cl::Context& context, cl::Device& device, GraphData& 
 
     ss << visited << " visited, thats % " << (float(visited) / bufVertexCount) * 100 << std::endl;
     ss << "Loops needed: " << outerLoopCounter << ", " << innerLoops << " iterations per loop" << std::endl;
+
+    //  TODO: Kosten auswerten
+    //  in unserem Fall (da Zufallswerte und >100.000 Vertices) relativ uninteressant
+
     return;
 }
