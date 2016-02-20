@@ -1,2 +1,7 @@
-Build geht entweder mit make oder scons
+Projektmitglieder
+    Paul Thieme
+    Niklas Zimmermann
+
+Build entweder mit make oder scons (empfohlen)
+Benoetigt die entsprechenden libs von WxWidgets (getestet auf Version 3.0.2) und OpenCL Header/Libs
 
