@@ -31,9 +31,11 @@ kernel void bfs_stage(global read_only uint* vertexArray, global read_only uint*
         {
             //  check if vertex behin edge was visited
             __private uint nextVertexId = edgeArray[edge];
+            __private uint currentCosts = costArray[tid];
 
             if (visitedArray[nextVertexId] == 0)
             {
+                costArray[nextVertexId] = currentCosts + 1;
                 toVisitNext[nextVertexId] = 1;
             }
         }
@@ -85,15 +87,16 @@ kernel void bfs_init(global uint* frontierArray, global uint* visitedArray,
     if (tid >= vertexCount)
         return;
 
+    costArray[tid] = 0;
+    visitedArray[tid] = 0;
+
     if (sourceVertex == tid)
     {
         frontierArray[tid] = 1;
-        visitedArray[tid] = 0;
     }
     else
     {
         frontierArray[tid] = 0;
-        visitedArray[tid] = 0;
     }
 }
 
