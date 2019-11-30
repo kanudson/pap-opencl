@@ -5,3 +5,7 @@ Projektmitglieder
 Build entweder mit make oder scons (empfohlen)
 Benoetigt die entsprechenden libs von WxWidgets (getestet auf Version 3.0.2) und OpenCL Header/Libs
 
+---
+
+Build either with make or scons (prefered)
+You will need to have WxWidgets (tested with 3.0.2) and OpenCL headers + libs installed!
